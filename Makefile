@@ -6,6 +6,7 @@ SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 WORKDIR ?= work
+VMDIR ?= $(WORKDIR)/packer-build.vmwarevm
 
 AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
 AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
@@ -55,6 +56,21 @@ $(WORKDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(KVM_ARM64_IMG)
 	qemu-img convert -f qcow2 -O vmdk -p $(KVM_ARM64_IMG) $(VMDK_ARM64_IMG)
 
 convert: $(WORKDIR)/$(VMDK_ARM64_IMG) ## Convert KVM/qcow2 image(s) to VMDK
+
+$(VMDIR):
+	mkdir -p $(VMDIR)
+
+$(VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in | $(VMDIR)
+	sed \
+		-e "s,%%VMDK_NAME%%,$(VMDK_ARM64_IMG),g" \
+		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
+	< amazonlinux-2.vmx.in > $@
+
+$(VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(VMDIR)
+	cd $(VMDIR) && \
+	ln -s ../$(VMDK_ARM64_IMG) $(VMDK_ARM64_IMG)
+
+vm: $(VMDIR)/amazonlinux-2.vmx $(VMDIR)/$(VMDK_ARM64_IMG) ## Prepare build VM
 
 .PHONY: clean
 clean:
