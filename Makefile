@@ -5,8 +5,9 @@ SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
-WORKDIR ?= work
+WORKDIR ?= $(TOPDIR)/work
 VMDIR ?= $(WORKDIR)/packer-build.vmwarevm
+PACKERDIR ?= $(WORKDIR)/packer
 
 AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
 AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
@@ -60,10 +61,14 @@ convert: $(WORKDIR)/$(VMDK_ARM64_IMG) ## Convert KVM/qcow2 image(s) to VMDK
 $(VMDIR):
 	mkdir -p $(VMDIR)
 
-$(VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in | $(VMDIR)
+$(VMDIR)/seed.iso: | $(VMDIR)
+	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata http/amazon/
+
+$(VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in $(VMDIR)/seed.iso | $(VMDIR)
 	sed \
 		-e "s,%%VMDK_NAME%%,$(VMDK_ARM64_IMG),g" \
 		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
+		-e "s,%%SEED_ISO_PATH%%,$(VMDIR)/seed.iso,g" \
 	< amazonlinux-2.vmx.in > $@
 
 $(VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(VMDIR)
@@ -71,6 +76,24 @@ $(VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(VMDIR)
 	ln -s ../$(VMDK_ARM64_IMG) $(VMDK_ARM64_IMG)
 
 vm: $(VMDIR)/amazonlinux-2.vmx $(VMDIR)/$(VMDK_ARM64_IMG) ## Prepare build VM
+
+$(PACKERDIR):
+	mkdir -p $(PACKERDIR)
+
+$(PACKERDIR)/amazonlinux-2.pkr.hcl: amazonlinux-2.pkr.hcl.in | $(PACKERDIR)
+	sed \
+		-e "s,%%VMX_PATH%%,$(VMDIR)/amazonlinux-2.vmx,g" \
+		-e "s,%%VM_NAME%%,amazonlinux-2-fresh,g" \
+	< amazonlinux-2.pkr.hcl.in > $@
+
+packervm: $(PACKERDIR)/amazonlinux-2.pkr.hcl ## Prepare packer sources
+
+.PHONY: build
+build: vm packervm ## Run packer build
+	echo "building..." && \
+	export PACKER_LOG=1 && \
+	cd $(PACKERDIR) && \
+	packer build .
 
 .PHONY: clean
 clean:

@@ -1,0 +1,40 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+source "vmware-vmx" "srcvm" {
+  source_path      = "%%VMX_PATH%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = false
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+}
+
+build {
+  sources = ["source.vmware-vmx.srcvm"]
+
+  provisioner "shell" {
+    inline = [
+      "echo 'Starting OS customization and software installation...'",
+      "sudo yum install -y open-vm-tools",
+      "sudo systemctl stop crond",
+      "sudo systemctl stop amazon-ssm-agent",
+      "sudo systemctl disable amazon-ssm-agent",
+      "sudo systemctl stop systemd-journald.socket",
+      "sudo systemctl stop systemd-journald",
+      "sudo cloud-init clean --logs",
+      "sudo truncate -s 0 /etc/machine_id",
+      "sudo rm -f /etc/ssh/ssh_host_*",
+      "sudo rm -rf /var/log/journal/*",
+      "sudo sync"
+    ]
+  }
+}
