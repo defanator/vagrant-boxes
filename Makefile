@@ -6,8 +6,8 @@ SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 WORKDIR ?= $(TOPDIR)/work
-VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
-PACKERDIR ?= $(WORKDIR)/packer-dst
+SRC_VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
+DST_VMDIR ?= $(WORKDIR)/packer-dst
 
 AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
 AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
@@ -58,42 +58,43 @@ $(WORKDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(KVM_ARM64_IMG)
 
 convert: $(WORKDIR)/$(VMDK_ARM64_IMG) ## Convert KVM/qcow2 image(s) to VMDK
 
-$(VMDIR):
-	mkdir -p $(VMDIR)
+$(SRC_VMDIR):
+	mkdir -p $(SRC_VMDIR)
 
-$(VMDIR)/seed.iso: | $(VMDIR)
+$(SRC_VMDIR)/seed.iso: | $(SRC_VMDIR)
 	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata http/amazon/
 
-$(VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in $(VMDIR)/seed.iso | $(VMDIR)
+$(SRC_VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in $(SRC_VMDIR)/seed.iso | $(SRC_VMDIR)
 	sed \
 		-e "s,%%VMDK_NAME%%,$(VMDK_ARM64_IMG),g" \
 		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
-		-e "s,%%SEED_ISO_PATH%%,$(VMDIR)/seed.iso,g" \
+		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
 	< amazonlinux-2.vmx.in > $@
 
-$(VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(VMDIR)
-	cd $(VMDIR) && \
+$(SRC_VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(SRC_VMDIR)
+	cd $(SRC_VMDIR) && \
 	ln -s ../$(VMDK_ARM64_IMG) $(VMDK_ARM64_IMG)
 
-vm: $(VMDIR)/amazonlinux-2.vmx $(VMDIR)/$(VMDK_ARM64_IMG) ## Prepare build VM
+srcvm: $(SRC_VMDIR)/amazonlinux-2.vmx $(SRC_VMDIR)/$(VMDK_ARM64_IMG) ## Prepare build VM
 
-$(PACKERDIR):
-	mkdir -p $(PACKERDIR)
+$(DST_VMDIR):
+	mkdir -p $(DST_VMDIR)
 
-$(PACKERDIR)/amazonlinux-2.pkr.hcl: amazonlinux-2.pkr.hcl.in | $(PACKERDIR)
+$(DST_VMDIR)/amazonlinux-2.pkr.hcl: amazonlinux-2.pkr.hcl.in | $(DST_VMDIR)
 	sed \
-		-e "s,%%VMX_PATH%%,$(VMDIR)/amazonlinux-2.vmx,g" \
-		-e "s,%%VM_NAME%%,amazonlinux-2-fresh,g" \
+		-e "s,%%VMX_PATH%%,$(SRC_VMDIR)/amazonlinux-2.vmx,g" \
+		-e "s,%%VM_NAME%%,amazonlinux-2,g" \
 	< amazonlinux-2.pkr.hcl.in > $@
 
-packervm: $(PACKERDIR)/amazonlinux-2.pkr.hcl ## Prepare packer sources
+dstvm: $(DST_VMDIR)/amazonlinux-2.pkr.hcl ## Prepare packer sources
 
-.PHONY: build
-build: vm packervm ## Run packer build
+$(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx: | srcvm dstvm
 	echo "building..." && \
 	export PACKER_LOG=1 && \
-	cd $(PACKERDIR) && \
+	cd $(DST_VMDIR) && \
 	packer build .
+
+build: $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx ## Run packer build
 
 .PHONY: clean
 clean:
