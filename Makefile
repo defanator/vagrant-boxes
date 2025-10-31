@@ -4,15 +4,21 @@ TOPDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+OSARCH := $(shell uname -m)
+
+ARCH = $(OSARCH)
 
 WORKDIR ?= $(TOPDIR)/work
 SRC_VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
 DST_VMDIR ?= $(WORKDIR)/packer-dst
+BOX_VMDIR ?= $(WORKDIR)/box
+DESTDIR ?= $(WORKDIR)/output
 
 AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
 AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
 AL2_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL2_IMAGES_LATEST_VER_URL))
 AL2_VERSION := $(shell basename $(AL2_IMAGES_LATEST_VER_URL_STRIPPED))
+AL2_REV ?= 1
 
 KVM_ARM64_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/kvm-arm64/amzn2-kvm-$(AL2_VERSION)-arm64.xfs.gpt.qcow2
 KVM_ARM64_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/kvm-arm64/SHA256SUMS
@@ -25,6 +31,8 @@ help: ## Show help message (list targets)
 
 SHOW_ENV_VARS = \
 	OS \
+	OSARCH \
+	ARCH \
 	AL2_IMAGES_LATEST_URL \
 	AL2_IMAGES_LATEST_VER_URL \
 	AL2_VERSION \
@@ -95,6 +103,37 @@ $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx: | srcvm dstvm
 	packer build .
 
 build: $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx ## Run packer build
+
+$(BOX_VMDIR):
+	mkdir -p $(BOX_VMDIR)
+
+$(BOX_VMDIR)/amazonlinux-2.vmx: | $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx $(BOX_VMDIR)
+	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		vmdk_bn=$$(basename $${vmdk}) ; \
+		cd $(BOX_VMDIR) && ln -h ../packer-dst/output-buildvm/$${vmdk_bn} $${vmdk_bn} ; \
+	done
+	cat $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx | egrep -v -- \
+		"^displayname|^extendedconfigfile|^nvme0.subnqnuuid|^nvram|^numa|^sata0:1|^remotedisplay.vnc|^uuid.bios|^uuid.location|^vc.uuid|^vmci0.id|^vmotion|^vmxstats.filename" \
+	> $@
+
+$(BOX_VMDIR)/metadata.json: metadata.json.in | $(BOX_VMDIR)
+	sed -e "s,%%ARCH%%,$(ARCH),g" < metadata.json.in > $@
+
+boxvm: $(BOX_VMDIR)/amazonlinux-2.vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant box VM
+
+$(DESTDIR):
+	mkdir -p $@
+
+$(DESTDIR)/amazonlinux-2.box: $(BOX_VMDIR)/amazonlinux-2.vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+	cd $(BOX_VMDIR) && tar -czvf $@ *
+
+$(DESTDIR)/metadata.json: metadata-box.json.in | $(DESTDIR)
+	sed \
+		-e "s,%%ARCH%%,$(ARCH),g" \
+		-e "s,%%VERSION%%,$(AL2_VERSION)-$(AL2_REV),g" \
+	< metadata-box.json.in > $@
+
+box: $(DESTDIR)/amazonlinux-2.box $(DESTDIR)/metadata.json ## Create vagrant box
 
 .PHONY: clean
 clean:
