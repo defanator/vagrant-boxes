@@ -6,8 +6,8 @@ SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 WORKDIR ?= $(TOPDIR)/work
-VMDIR ?= $(WORKDIR)/packer-build.vmwarevm
-PACKERDIR ?= $(WORKDIR)/packer
+VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
+PACKERDIR ?= $(WORKDIR)/packer-dst
 
 AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
 AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)

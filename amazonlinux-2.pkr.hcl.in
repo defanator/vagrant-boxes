@@ -8,10 +8,10 @@ packer {
   }
 }
 
-source "vmware-vmx" "srcvm" {
+source "vmware-vmx" "buildvm" {
   source_path      = "%%VMX_PATH%%"
   vm_name          = "%%VM_NAME%%"
-  headless         = false
+  headless         = true
   communicator     = "ssh"
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
@@ -19,7 +19,7 @@ source "vmware-vmx" "srcvm" {
 }
 
 build {
-  sources = ["source.vmware-vmx.srcvm"]
+  sources = ["source.vmware-vmx.buildvm"]
 
   provisioner "shell" {
     inline = [
@@ -34,6 +34,9 @@ build {
       "sudo truncate -s 0 /etc/machine_id",
       "sudo rm -f /etc/ssh/ssh_host_*",
       "sudo rm -rf /var/log/journal/*",
+      "sudo rm -f /etc/udev/rules.d/70-persistent-net.rules",
+      "sudo rm -f /etc/sysconfig/network-scripts/ifcfg-eth*",
+      "sudo rm -rf /var/cache/yum",
       "sudo sync"
     ]
   }
