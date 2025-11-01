@@ -6,7 +6,15 @@ SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 OSARCH := $(shell uname -m)
 
-ARCH = $(OSARCH)
+ifeq ($(OSARCH),x86_64)
+ARCH := amd64
+KVM_PATH := kvm
+GUEST_OS_TYPE := other5xlinux-64
+else
+ARCH := $(OSARCH)
+KVM_PATH := kvm-arm64
+GUEST_OS_TYPE := arm-other5xlinux-64
+endif
 
 WORKDIR ?= $(TOPDIR)/work
 SRC_VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
@@ -20,8 +28,8 @@ AL2_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL2_IMAGES_LATEST_VER_UR
 AL2_VERSION := $(shell basename $(AL2_IMAGES_LATEST_VER_URL_STRIPPED))
 AL2_REV ?= 1
 
-KVM_ARM64_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/kvm-arm64/amzn2-kvm-$(AL2_VERSION)-arm64.xfs.gpt.qcow2
-KVM_ARM64_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/kvm-arm64/SHA256SUMS
+KVM_ARM64_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/amzn2-kvm-$(AL2_VERSION)-$(OSARCH).xfs.gpt.qcow2
+KVM_ARM64_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
 KVM_ARM64_IMG := $(shell basename $(KVM_ARM64_IMG_URL))
 VMDK_ARM64_IMG := $(subst qcow2,vmdk,$(KVM_ARM64_IMG))
 
@@ -35,6 +43,7 @@ SHOW_ENV_VARS = \
 	OS \
 	OSARCH \
 	ARCH \
+	GUEST_OS_TYPE \
 	AL2_IMAGES_LATEST_URL \
 	AL2_IMAGES_LATEST_VER_URL \
 	AL2_VERSION \
@@ -79,6 +88,7 @@ $(SRC_VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in $(SRC_VMDIR)/seed.iso | $(S
 		-e "s,%%VMDK_NAME%%,$(VMDK_ARM64_IMG),g" \
 		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
 		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
+		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 	< amazonlinux-2.vmx.in > $@
 
 $(SRC_VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(SRC_VMDIR)
