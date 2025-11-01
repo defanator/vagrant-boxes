@@ -159,7 +159,7 @@ box: $(DESTDIR)/amazonlinux-2.box $(DESTDIR)/metadata.json ## Create vagrant box
 
 .PHONY: preclean
 preclean:
-	rm -rf $(SRC_VMDIR) $(DST_VMDIR) $(DESTDIR)
+	rm -rf $(SRC_VMDIR) $(DST_VMDIR) $(DESTDIR) $(BOX_VMDIR)
 	rm -f $(WORKDIR)/$(VMDK_ARM64_IMG)
 
 .PHONY: clean
