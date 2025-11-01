@@ -25,9 +25,11 @@ KVM_ARM64_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/kvm-arm64/SHA256SU
 KVM_ARM64_IMG := $(shell basename $(KVM_ARM64_IMG_URL))
 VMDK_ARM64_IMG := $(subst qcow2,vmdk,$(KVM_ARM64_IMG))
 
+VMWARE_DISKMANAGER ?= /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager
+
 .PHONY: help
 help: ## Show help message (list targets)
-	@awk 'BEGIN {FS = ":.*##"; printf "\nTargets:\n"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-19s\033[0m %s\n", $$1, $$2}' $(SELF)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nTargets:\n"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}' $(SELF)
 
 SHOW_ENV_VARS = \
 	OS \
@@ -101,6 +103,12 @@ $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx: | srcvm dstvm
 	export PACKER_LOG=1 && \
 	cd $(DST_VMDIR) && \
 	packer build .
+	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		echo "Defragmenting $${vmdk}..." ; \
+		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
+		echo "Shrinking $${vmdk}..." ; \
+		$(VMWARE_DISKMANAGER) -k $${vmdk} ; \
+	done
 
 build: $(DST_VMDIR)/output-buildvm/amazonlinux-2.vmx ## Run packer build
 
@@ -135,6 +143,11 @@ $(DESTDIR)/metadata.json: metadata-box.json.in | $(DESTDIR)
 
 box: $(DESTDIR)/amazonlinux-2.box $(DESTDIR)/metadata.json ## Create vagrant box
 
+.PHONY: preclean
+preclean:
+	rm -rf $(SRC_VMDIR) $(DST_VMDIR) $(DESTDIR)
+	rm -f $(WORKDIR)/$(VMDK_ARM64_IMG)
+
 .PHONY: clean
-clean:
+clean: ## Clean building environment
 	rm -rf $(WORKDIR)
