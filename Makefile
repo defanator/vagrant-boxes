@@ -10,10 +10,12 @@ ifeq ($(OSARCH),x86_64)
 ARCH := amd64
 KVM_PATH := kvm
 GUEST_OS_TYPE := other5xlinux-64
+FIRMWARE ?= bios
 else
 ARCH := $(OSARCH)
 KVM_PATH := kvm-arm64
 GUEST_OS_TYPE := arm-other5xlinux-64
+FIRMWARE ?= efi
 endif
 
 WORKDIR ?= $(TOPDIR)/work
@@ -43,6 +45,7 @@ SHOW_ENV_VARS = \
 	OS \
 	OSARCH \
 	ARCH \
+	FIRMWARE \
 	GUEST_OS_TYPE \
 	AL2_IMAGES_LATEST_URL \
 	AL2_IMAGES_LATEST_VER_URL \
@@ -89,6 +92,7 @@ $(SRC_VMDIR)/amazonlinux-2.vmx: amazonlinux-2.vmx.in $(SRC_VMDIR)/seed.iso | $(S
 		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
 		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
+		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
 	< amazonlinux-2.vmx.in > $@
 
 $(SRC_VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(SRC_VMDIR)
