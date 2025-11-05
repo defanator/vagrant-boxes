@@ -10,8 +10,8 @@ SHOW_ENV_VARS += \
 	AL2_IMAGES_LATEST_URL \
 	AL2_IMAGES_LATEST_VER_URL \
 	AL2_VERSION \
-	KVM_ARM64_IMG \
-	VMDK_ARM64_IMG
+	KVM_IMG \
+	VMDK_IMG
 
 include $(_TOPDIR)/../Makefile
 
@@ -40,27 +40,27 @@ AL2_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL2_IMAGES_LATEST_VER_UR
 AL2_VERSION := $(shell basename $(AL2_IMAGES_LATEST_VER_URL_STRIPPED))
 AL2_REV ?= 1
 
-KVM_ARM64_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/amzn2-kvm-$(AL2_VERSION)-$(OSARCH).xfs.gpt.qcow2
-KVM_ARM64_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
-KVM_ARM64_IMG := $(shell basename $(KVM_ARM64_IMG_URL))
-VMDK_ARM64_IMG := $(subst qcow2,vmdk,$(KVM_ARM64_IMG))
+KVM_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/amzn2-kvm-$(AL2_VERSION)-$(OSARCH).xfs.gpt.qcow2
+KVM_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
+KVM_IMG := $(shell basename $(KVM_IMG_URL))
+VMDK_IMG := $(subst qcow2,vmdk,$(KVM_IMG))
 
 VMWARE_DISKMANAGER ?= /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager
 
 
-$(WORKDIR)/$(KVM_ARM64_IMG): | $(WORKDIR)
+$(WORKDIR)/$(KVM_IMG): | $(WORKDIR)
 	cd $(WORKDIR) && \
-	curl -fLO --progress-bar $(KVM_ARM64_SHASUM_URL) && \
-	curl -fLO --progress-bar $(KVM_ARM64_IMG_URL) && \
+	curl -fLO --progress-bar $(KVM_SHASUM_URL) && \
+	curl -fLO --progress-bar $(KVM_IMG_URL) && \
 	sha256sum -c SHA256SUMS
 
-fetch: $(WORKDIR)/$(KVM_ARM64_IMG) ## Fetch Amazon Linux 2 original KVM/qcow2 image(s)
+fetch: $(WORKDIR)/$(KVM_IMG) ## Fetch Amazon Linux 2 original KVM/qcow2 image(s)
 
-$(WORKDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(KVM_ARM64_IMG)
+$(WORKDIR)/$(VMDK_IMG): $(WORKDIR)/$(KVM_IMG)
 	cd $(WORKDIR) && \
-	qemu-img convert -f qcow2 -O vmdk -p $(KVM_ARM64_IMG) $(VMDK_ARM64_IMG)
+	qemu-img convert -f qcow2 -O vmdk -p $(KVM_IMG) $(VMDK_IMG)
 
-convert: $(WORKDIR)/$(VMDK_ARM64_IMG) ## Convert KVM/qcow2 image(s) to VMDK
+convert: $(WORKDIR)/$(VMDK_IMG) ## Convert KVM/qcow2 image(s) to VMDK
 
 $(SRC_VMDIR):
 	mkdir -p $(SRC_VMDIR)
@@ -70,18 +70,18 @@ $(SRC_VMDIR)/seed.iso: | $(SRC_VMDIR)
 
 $(SRC_VMDIR)/amazonlinux-2.vmx: $(_TOPDIR)/amazonlinux-2.vmx.in $(SRC_VMDIR)/seed.iso | $(SRC_VMDIR)
 	sed \
-		-e "s,%%VMDK_NAME%%,$(VMDK_ARM64_IMG),g" \
+		-e "s,%%VMDK_NAME%%,$(VMDK_IMG),g" \
 		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
 		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
 	< $(_TOPDIR)/amazonlinux-2.vmx.in > $@
 
-$(SRC_VMDIR)/$(VMDK_ARM64_IMG): $(WORKDIR)/$(VMDK_ARM64_IMG) | $(SRC_VMDIR)
+$(SRC_VMDIR)/$(VMDK_IMG): $(WORKDIR)/$(VMDK_IMG) | $(SRC_VMDIR)
 	cd $(SRC_VMDIR) && \
-	ln -s ../$(VMDK_ARM64_IMG) $(VMDK_ARM64_IMG)
+	ln -s ../$(VMDK_IMG) $(VMDK_IMG)
 
-srcvm: $(SRC_VMDIR)/amazonlinux-2.vmx $(SRC_VMDIR)/$(VMDK_ARM64_IMG) ## Prepare build VM
+srcvm: $(SRC_VMDIR)/amazonlinux-2.vmx $(SRC_VMDIR)/$(VMDK_IMG) ## Prepare build VM
 
 $(DST_VMDIR):
 	mkdir -p $(DST_VMDIR)
@@ -142,4 +142,4 @@ box: $(DESTDIR)/amazonlinux-2.box $(DESTDIR)/metadata.json ## Create vagrant box
 .PHONY: preclean
 preclean:
 	rm -rf $(SRC_VMDIR) $(DST_VMDIR) $(DESTDIR) $(BOX_VMDIR)
-	rm -f $(WORKDIR)/$(VMDK_ARM64_IMG)
+	rm -f $(WORKDIR)/$(VMDK_IMG)
