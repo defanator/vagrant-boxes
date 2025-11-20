@@ -1,8 +1,9 @@
 #!/usr/bin/env make -f
 
 _TOPDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-_SELF := $(abspath $(lastword $(MAKEFILE_LIST)))
-REFS += $(_SELF)
+_SELF   := $(abspath $(lastword $(MAKEFILE_LIST)))
+_IMAGE  := $(shell basename $(_TOPDIR))
+REFS    += $(_SELF)
 
 SHOW_ENV_VARS += \
 	FIRMWARE \
@@ -19,6 +20,8 @@ OS      ?= $(error OS not defined)
 OSARCH  ?= $(error OSARCH not defined)
 WORKDIR ?= $(error WORKDIR not defined)
 
+_WORKDIR := $(WORKDIR)/$(_IMAGE)
+
 ifeq ($(OSARCH),x86_64)
 KVM_PATH := kvm
 GUEST_OS_TYPE := other6xlinux-64
@@ -29,10 +32,10 @@ GUEST_OS_TYPE := arm-other6xlinux-64
 FIRMWARE ?= efi
 endif
 
-SRC_VMDIR ?= $(WORKDIR)/packer-src.vmwarevm
-DST_VMDIR ?= $(WORKDIR)/packer-dst
-BOX_VMDIR ?= $(WORKDIR)/box
-DESTDIR ?= $(WORKDIR)/output
+SRC_VMDIR ?= $(_WORKDIR)/packer-src.vmwarevm
+DST_VMDIR ?= $(_WORKDIR)/packer-dst
+BOX_VMDIR ?= $(_WORKDIR)/box
+DESTDIR ?= $(_WORKDIR)/output
 
 AL2023_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/al2023/os-images/latest/
 AL2023_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2023_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
@@ -47,20 +50,22 @@ VMDK_IMG := $(subst qcow2,vmdk,$(KVM_IMG))
 
 VMWARE_DISKMANAGER ?= /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager
 
+$(_WORKDIR):
+	mkdir -p "$@"
 
-$(WORKDIR)/$(KVM_IMG): | $(WORKDIR)
-	cd $(WORKDIR) && \
+$(_WORKDIR)/$(KVM_IMG): | $(_WORKDIR)
+	cd $(_WORKDIR) && \
 	curl -fLO --progress-bar $(KVM_SHASUM_URL) && \
 	curl -fLO --progress-bar $(KVM_IMG_URL) && \
 	sha256sum -c SHA256SUMS
 
-fetch: $(WORKDIR)/$(KVM_IMG) ## Fetch Amazon Linux 2 original KVM/qcow2 image(s)
+fetch: $(_WORKDIR)/$(KVM_IMG) ## Fetch Amazon Linux 2 original KVM/qcow2 image(s)
 
-$(WORKDIR)/$(VMDK_IMG): $(WORKDIR)/$(KVM_IMG)
-	cd $(WORKDIR) && \
+$(_WORKDIR)/$(VMDK_IMG): $(_WORKDIR)/$(KVM_IMG)
+	cd $(_WORKDIR) && \
 	qemu-img convert -f qcow2 -O vmdk -p $(KVM_IMG) $(VMDK_IMG)
 
-convert: $(WORKDIR)/$(VMDK_IMG) ## Convert KVM/qcow2 image(s) to VMDK
+convert: $(_WORKDIR)/$(VMDK_IMG) ## Convert KVM/qcow2 image(s) to VMDK
 
 $(SRC_VMDIR):
 	mkdir -p $(SRC_VMDIR)
@@ -77,7 +82,7 @@ $(SRC_VMDIR)/amazonlinux-2023.vmx: $(_TOPDIR)/amazonlinux-2023.vmx.in $(SRC_VMDI
 		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
 	< $(_TOPDIR)/amazonlinux-2023.vmx.in > $@
 
-$(SRC_VMDIR)/$(VMDK_IMG): $(WORKDIR)/$(VMDK_IMG) | $(SRC_VMDIR)
+$(SRC_VMDIR)/$(VMDK_IMG): $(_WORKDIR)/$(VMDK_IMG) | $(SRC_VMDIR)
 	cd $(SRC_VMDIR) && \
 	ln -s ../$(VMDK_IMG) $(VMDK_IMG)
 
@@ -142,4 +147,4 @@ box: $(DESTDIR)/amazonlinux-2023.box $(DESTDIR)/metadata.json ## Create vagrant 
 .PHONY: preclean
 preclean:
 	rm -rf $(SRC_VMDIR) $(DST_VMDIR) $(DESTDIR) $(BOX_VMDIR)
-	rm -f $(WORKDIR)/$(VMDK_IMG)
+	rm -f $(_WORKDIR)/$(VMDK_IMG)
