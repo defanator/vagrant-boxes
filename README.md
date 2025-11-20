@@ -4,6 +4,8 @@ This repository provides automated build tools for creating Vagrant boxes from A
 It supports building Vagrant boxes for VMware desktop environments using Packer.
 For now it is intended to be used on macOS hosts, but adding Linux support should be relatively easy.
 
+Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicorp.com/vagrant/discover/defanator](https://portal.cloud.hashicorp.com/vagrant/discover/defanator)
+
 ## Supported images
 
 - **Amazon Linux 2** - [amazonlinux2/](amazonlinux2/)
