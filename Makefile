@@ -13,21 +13,34 @@ else
 ARCH := $(OSARCH)
 endif
 
+IMAGES := $(shell find $(TOPDIR)/ -mindepth 2 -type f -name Makefile | awk -F'/' '{print $$(NF-1)}')
+
 _reverse = $(if $(1),$(call _reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
 .PHONY: help
 help: ## Show help message (list targets)
-	@printf "\nTargets:\n"
-	@for ref in $(call _reverse,$(REFS)); do \
-		awk 'BEGIN {FS = ":.*##"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}' $${ref} ; \
-	done
+	@{ \
+	printf "\nTargets:\n" ; \
+	count=0 ; \
+	for ref in $(call _reverse,$(REFS)); do \
+		awk 'BEGIN {FS = ":.*##"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}' $${ref} ; \
+		count=$$((count + 1)) ; \
+	done ; \
+	if [ "$${count}" -eq 1 ]; then \
+		printf "\nImage targets:\n" ; \
+		printf "  \033[36mbox-%%image%%\033[0m   Build box\n" ; \
+		printf "  \033[36mhelp-%%image%%\033[0m  List all specific targets for a given image\n\n" ; \
+		printf "where \033[36m%%image%%\033[0m is one of: $(IMAGES)\n" ; \
+	fi ; \
+	}
 
 SHOW_ENV_VARS_BASE := \
 	TOPDIR \
 	SELF \
 	OS \
 	OSARCH \
-	ARCH
+	ARCH \
+	IMAGES
 
 BASE_ENV = \
 	OS="$(OS)" \
