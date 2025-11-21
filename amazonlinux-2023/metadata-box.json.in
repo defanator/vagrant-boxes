@@ -1,5 +1,5 @@
 {
-  "name": "defanator/amazonlinux-2",
+  "name": "defanator/amazonlinux-2023",
   "versions": [
     {
       "version": "%%VERSION%%",
@@ -7,7 +7,7 @@
         {
           "name": "vmware_desktop",
           "architecture": "%%ARCH%%",
-          "url": "amazonlinux-2.box"
+          "url": "amazonlinux-2023-v%%VERSION%%-%%ARCH%%.box"
         }
       ]
     }

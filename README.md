@@ -8,8 +8,8 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 
 ## Supported images
 
-- **Amazon Linux 2** - [amazonlinux2/](amazonlinux2/)
-- **Amazon Linux 2023** - [amazonlinux2023/](amazonlinux2023/)
+- **Amazon Linux 2** - [amazonlinux-2/](amazonlinux-2/)
+- **Amazon Linux 2023** - [amazonlinux-2023/](amazonlinux-2023/)
 
 Both images support:
 - x86_64 (amd64) architecture
@@ -44,10 +44,10 @@ brew install qemu
 make
 
 # Build latest version of a specific box (e.g., Amazon Linux 2)
-make box-amazonlinux2
+make box-amazonlinux-2
 
 # Build latest Amazon Linux 2023 box
-make box-amazonlinux2023
+make box-amazonlinux-2023
 ```
 
 ### Individual steps
@@ -56,19 +56,19 @@ For more granular control, you can run individual steps:
 
 ```bash
 # Show help for a specific image
-make help-amazonlinux2
+make help-amazonlinux-2
 
 # Fetch the original KVM image
-make fetch-amazonlinux2
+make fetch-amazonlinux-2
 
 # Convert KVM image to VMDK format
-make convert-amazonlinux2
+make convert-amazonlinux-2
 
 # Build the box using Packer
-make build-amazonlinux2
+make build-amazonlinux-2
 
 # Package the final Vagrant box
-make box-amazonlinux2
+make box-amazonlinux-2
 ```
 
 ### Auxiliary targets
@@ -77,7 +77,7 @@ make box-amazonlinux2
 make show-env
 
 # Show environment for a specific image (including versions etc)
-make show-env-amazonlinux2
+make show-env-amazonlinux-2
 ```
 
 ## Build process
@@ -110,14 +110,28 @@ The resulting Vagrant boxes include:
 Built boxes are placed in:
 ```
 work/
-├── amazonlinux2/
+├── amazonlinux-2/
 │   └── output/
-│       ├── amazonlinux-2.box      # Vagrant box file
-│       └── metadata.json          # Box metadata
-└── amazonlinux2023/
+│       ├── amazonlinux-2*.box     # Vagrant box file
+│       ├── metadata.json          # Box metadata
+│       └── SHA256SUMS             # Checksums
+└── amazonlinux-2023/
     └── output/
-        ├── amazonlinux-2023.box   # Vagrant box file
-        └── metadata.json          # Box metadata
+        ├── amazonlinux-2023*.box  # Vagrant box file
+        ├── metadata.json          # Box metadata
+        └── SHA256SUMS             # Checksums
+```
+
+### How to add locally built box to vagrant
+
+In the corresponding output directory, run:
+```
+% vagrant box add metadata.json
+==> box: Loading metadata for box 'metadata.json'
+    box: URL: file:///Users/xxxx/git/vagrant-boxes/work/amazonlinux-2023/output/metadata.json
+==> box: Adding box 'defanator/amazonlinux-2023' (v2023.9.20251117.1-1) for provider: vmware_desktop (arm64)
+    box: Downloading: amazonlinux-2023-v2023.9.20251117.1-1-arm64.box
+==> box: Successfully added box 'defanator/amazonlinux-2023' (v2023.9.20251117.1-1) for 'vmware_desktop (arm64)'!
 ```
 
 ## Cleanup
@@ -127,7 +141,7 @@ work/
 make clean
 
 # Clean specific VM artifacts while leaving the KVM image (useful for debugging to avoid extra downloads)
-make -C amazonlinux2 preclean
+make -C amazonlinux-2 preclean
 ```
 
 ### Adding new images
