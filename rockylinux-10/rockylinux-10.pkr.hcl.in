@@ -13,7 +13,7 @@ source "vmware-iso" "buildvm" {
   iso_checksum     = "%%ISO_CHECKSUM%%"
   vm_name          = "%%VM_NAME%%"
   headless         = false
-  guest_os_type    = "centos-64"
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
   version          = 22
   cores            = 2
   memory           = 4096

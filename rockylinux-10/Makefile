@@ -73,6 +73,7 @@ $(DST_VMDIR):
 $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 	sed \
 		-e "s,%%OSARCH%%,$(OSARCH),g" \
+		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 		-e "s,%%ISO_URL%%,$(ISO_IMG_LOCAL_URL),g" \
 		-e "s,%%ISO_CHECKSUM%%,file:$(ISO_SHASUM_LOCAL_URL),g" \
 		-e "s,%%VM_NAME%%,$(_IMAGE),g" \
@@ -87,6 +88,8 @@ $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	cd $(DST_VMDIR) && \
 	packer build $(PACKER_ARGS) .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "$$(grep -- vmdk $@ | cut -d '"' -f 2)"); do \
+		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
+		continue ; \
 		echo "Defragmenting $${vmdk}..." ; \
 		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
 		echo "Shrinking $${vmdk}..." ; \
