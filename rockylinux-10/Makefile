@@ -65,7 +65,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 
 fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Rocky Linux 10 ISO image
 
-srcvm: ## Prepare build VM
+srcvm:
 	$(error this builder does not require srcvm)
 
 $(DST_VMDIR):
