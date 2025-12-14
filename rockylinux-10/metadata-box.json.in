@@ -1,0 +1,15 @@
+{
+  "name": "defanator/rockylinux-10",
+  "versions": [
+    {
+      "version": "%%VERSION%%",
+      "providers": [
+        {
+          "name": "vmware_desktop",
+          "architecture": "%%ARCH%%",
+          "url": "rockylinux-10-v%%VERSION%%-%%ARCH%%.box"
+        }
+      ]
+    }
+  ]
+}
