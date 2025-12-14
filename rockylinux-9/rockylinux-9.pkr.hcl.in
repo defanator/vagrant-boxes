@@ -12,7 +12,7 @@ source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
   vm_name          = "%%VM_NAME%%"
-  headless         = false
+  headless         = true
   guest_os_type    = "%%GUEST_OS_TYPE%%"
   version          = 22
   cores            = 2
