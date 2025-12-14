@@ -66,6 +66,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Rocky Linux 10 ISO image
 
 srcvm: ## Prepare build VM
+	$(error this builder does not require srcvm)
 
 $(DST_VMDIR):
 	mkdir -p $(DST_VMDIR)
@@ -80,9 +81,9 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
-dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl ## Prepare packer sources
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl ## Prepare packer sources
 
-$(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
+$(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
 	echo "building..." && \
 	export PACKER_LOG=1 && \
 	cd $(DST_VMDIR) && \
