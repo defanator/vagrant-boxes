@@ -8,6 +8,12 @@ packer {
   }
 }
 
+variable "boot_command" {
+  type        = list(string)
+  default     = null
+  description = "Keystrokes to initiate automated install"
+}
+
 source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
@@ -26,8 +32,7 @@ source "vmware-iso" "buildvm" {
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
-  #boot_command     = ["<wait><up><wait><tab><wait><bs><bs><bs><bs><bs>inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/rocky9/ks.cfg inst.repo=https://download.rockylinux.org/pub/rocky/9/BaseOS/%%OSARCH%%/os/<wait><enter>"]
-  boot_command     = ["<wait><up><wait>e<wait><down><down><end> inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/rocky9/ks.cfg inst.repo=https://download.rockylinux.org/pub/rocky/9/BaseOS/%%ISO_ARCH%%/os/<wait><f10>"]
+  boot_command     = var.boot_command
 }
 
 build {
