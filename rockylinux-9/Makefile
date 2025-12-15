@@ -27,24 +27,26 @@ WORKDIR ?= $(error WORKDIR not defined)
 _WORKDIR := $(WORKDIR)/$(_IMAGE)
 
 ifeq ($(OSARCH),x86_64)
-KVM_PATH := kvm
 GUEST_OS_TYPE := other5xlinux-64
 FIRMWARE ?= bios
-else
-KVM_PATH := kvm-arm64
+ISO_ARCH := $(OSARCH)
+else ifeq ($(OSARCH),arm64)
 GUEST_OS_TYPE := arm-other5xlinux-64
 FIRMWARE ?= efi
+ISO_ARCH := aarch64
+else
+$(error unknown OSARCH: $(OSARCH))
 endif
 
 DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-ROCKY9_IMAGES_URL := https://download.rockylinux.org/pub/rocky/9/isos/$(OSARCH)
+ROCKY9_IMAGES_URL := https://download.rockylinux.org/pub/rocky/9/isos/$(ISO_ARCH)
 ROCKY9_VERSION := 9.7
 ROCKY9_REV ?= $(shell date +"%Y%m%d").1
 
-ISO_IMG_URL := $(ROCKY9_IMAGES_URL)/Rocky-$(ROCKY9_VERSION)-$(OSARCH)-boot.iso
+ISO_IMG_URL := $(ROCKY9_IMAGES_URL)/Rocky-$(ROCKY9_VERSION)-$(ISO_ARCH)-boot.iso
 ISO_SHASUM_URL := $(ISO_IMG_URL).CHECKSUM
 
 ISO_IMG := $(shell basename $(ISO_IMG_URL))
@@ -74,6 +76,7 @@ $(DST_VMDIR):
 $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 	sed \
 		-e "s,%%OSARCH%%,$(OSARCH),g" \
+		-e "s,%%ISO_ARCH%%,$(ISO_ARCH),g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 		-e "s,%%ISO_URL%%,$(ISO_IMG_LOCAL_URL),g" \
 		-e "s,%%ISO_CHECKSUM%%,file:$(ISO_SHASUM_LOCAL_URL),g" \
