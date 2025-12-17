@@ -1,0 +1,70 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+variable "boot_command" {
+  type        = list(string)
+  default     = null
+  description = "Keystrokes to initiate automated install"
+}
+
+source "vmware-iso" "buildvm" {
+  iso_url          = "%%ISO_URL%%"
+  iso_checksum     = "%%ISO_CHECKSUM%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = true
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
+  version          = 22
+  cores            = 2
+  memory           = 4096
+  disk_size        = 8000
+  disk_adapter_type = "sata"
+  network_adapter_type = "vmxnet3"
+  usb              = true
+  http_directory   = "%%HTTP_DIRECTORY%%"
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+  boot_command     = var.boot_command
+}
+
+build {
+  sources = ["source.vmware-iso.buildvm"]
+
+  provisioner "shell" {
+    inline = [<<EOF
+#!/usr/bin/env bash
+
+set -ex
+umask 022
+
+echo 'Starting OS customization and software installation...'
+
+sudo systemctl stop crond
+sudo systemctl stop systemd-journald-dev-log.socket
+sudo systemctl stop systemd-journald.socket
+sudo systemctl stop systemd-journald
+sudo dnf install -y cloud-init open-vm-tools
+sudo cloud-init clean --logs
+sudo truncate -s 0 /etc/machine-id
+sudo truncate -s 0 /etc/machine_id
+sudo rm -f /etc/ssh/ssh_host_*
+sudo rm -rf /var/log/journal/*
+sudo rm -f /etc/udev/rules.d/70-persistent-net.rules
+sudo rm -f /etc/sysconfig/network-scripts/ifcfg-eth*
+sudo rm -f /etc/NetworkManager/system-connections/*.nmconnection
+sudo rm -rf /var/cache/dnf
+sudo find /var/log/ -type f -print -delete
+mkdir -p /home/vagrant/.ssh && chmod 700 /home/vagrant/.ssh && curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
+sudo sync
+EOF
+    ]
+  }
+}

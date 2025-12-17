@@ -1,0 +1,1 @@
+boot_command = ["<wait><up><wait><tab><wait><bs><bs><bs><bs><bs>inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/rocky9/ks.cfg inst.repo=https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/<wait><enter>"]

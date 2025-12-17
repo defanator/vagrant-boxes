@@ -10,6 +10,8 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 
 - **Amazon Linux 2** - [amazonlinux-2/](amazonlinux-2/)
 - **Amazon Linux 2023** - [amazonlinux-2023/](amazonlinux-2023/)
+- **Rocky Linux 9** - [rockylinux-9/](rockylinux-9/)
+- **Rocky Linux 10** - [rockylinux-10/](rockylinux-10/)
 
 Both images support:
 - x86_64 (amd64) architecture
