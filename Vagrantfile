@@ -4,10 +4,10 @@
 Vagrant.configure("2") do |config|
   host = RbConfig::CONFIG['host_os']
 
-  cpus = [2, `getconf _NPROCESSORS_ONLN`.to_i / 2].max
+  cpus = [2, (`getconf _NPROCESSORS_ONLN`.to_i / 2 / 2) * 2].min
 
   if host =~ /darwin/
-    mem = [2048, `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 2].max
+    mem = [2048, `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 2].min
   elsif host =~ /linux/
     mem = [cpus * 512, `awk '/MemTotal/ {print $2}' /proc/meminfo`.to_i / 1024 / 2].min
   end
@@ -16,13 +16,6 @@ Vagrant.configure("2") do |config|
     vmw.cpus = cpus
     vmw.memory = mem
     vmw.gui = false
-  end
-
-  config.vm.provider :libvirt do |libvirt, override|
-    libvirt.cpus = cpus
-    libvirt.memory = mem
-    libvirt.driver = "kvm"
-    libvirt.cpu_mode = "host-passthrough"
   end
 
   config.ssh.forward_agent = true
