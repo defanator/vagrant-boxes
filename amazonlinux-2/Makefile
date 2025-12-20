@@ -71,7 +71,7 @@ $(SRC_VMDIR):
 	mkdir -p $(SRC_VMDIR)
 
 $(SRC_VMDIR)/seed.iso: | $(SRC_VMDIR)
-	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata http/amazon/
+	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata $(TOPDIR)/http/amazon/
 
 $(SRC_VMDIR)/$(_IMAGE).vmx: $(_TOPDIR)/$(_IMAGE).vmx.in $(SRC_VMDIR)/seed.iso | $(SRC_VMDIR)
 	sed \
@@ -122,7 +122,7 @@ $(BOX_VMDIR)/$(_IMAGE).vmx: | $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx $(BOX_VM
 		cd $(BOX_VMDIR) && ln -h ../packer-dst/output-buildvm/$${vmdk_bn} $${vmdk_bn} ; \
 	done
 	cat $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx | egrep -v -- \
-		"^displayname|^extendedconfigfile|^nvme0.subnqnuuid|^nvram|^numa|^sata0:1|^remotedisplay.vnc|^uuid.bios|^uuid.location|^vc.uuid|^vmci0.id|^vmotion|^vmxstats.filename" \
+		"^displayname|^ethernet0.pcislotnumber|^extendedconfigfile|^nvme0.subnqnuuid|^nvram|^numa|^sata0:1|^remotedisplay.vnc|^uuid.bios|^uuid.location|^vc.uuid|^vmci0.id|^vmotion|^vmxstats.filename" \
 	> $@
 
 $(BOX_VMDIR)/metadata.json: $(_TOPDIR)/metadata.json.in | $(BOX_VMDIR)
