@@ -4,9 +4,9 @@
 Vagrant.configure("2") do |config|
   host = RbConfig::CONFIG['host_os']
 
-  # use one quarter of available cores, rounded down to an even number, capped at 2 CPUs
+  # use one quarter of available cores, rounded down to an even number, capped at 2 CPUs (if available)
   cores = `getconf _NPROCESSORS_ONLN`.to_i
-  cpus = [2, (cores / 4) * 2].min
+  cpus = [2, [(cores / 4) * 2, 1].max].min
 
   if host =~ /darwin/
     mem = [2048, `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 2].min
