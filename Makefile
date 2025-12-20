@@ -83,3 +83,6 @@ build-%:
 
 box-%:
 	$(BASE_ENV) $(MAKE) -f $(TOPDIR)/$*/Makefile box
+
+preclean-%:
+	$(BASE_ENV) $(MAKE) -f $(TOPDIR)/$*/Makefile preclean
