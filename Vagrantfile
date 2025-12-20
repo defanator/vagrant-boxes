@@ -4,12 +4,15 @@
 Vagrant.configure("2") do |config|
   host = RbConfig::CONFIG['host_os']
 
+  # this ensures even number of cores
   cpus = [2, (`getconf _NPROCESSORS_ONLN`.to_i / 2 / 2) * 2].min
 
   if host =~ /darwin/
     mem = [2048, `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 2].min
   elsif host =~ /linux/
     mem = [cpus * 512, `awk '/MemTotal/ {print $2}' /proc/meminfo`.to_i / 1024 / 2].min
+  else
+    mem = 1024
   end
 
   config.vm.provider "vmware_desktop" do |vmw, override|
