@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "vmware_desktop" do |vmw, override|
     vmw.cpus = cpus
     vmw.memory = mem
-    vmw.gui = false
+    vmw.gui = true
   end
 
   config.ssh.forward_agent = true
@@ -42,5 +42,10 @@ Vagrant.configure("2") do |config|
   config.vm.define "rocky10", autostart: false do |rocky10|
     rocky10.vm.box = "defanator/rockylinux-10"
     rocky10.vm.hostname = "rockylinux10"
+  end
+
+  config.vm.define "debian12", autostart: false do |debian12|
+    debian12.vm.box = "defanator/debian-12"
+    debian12.vm.hostname = "debian12"
   end
 end
