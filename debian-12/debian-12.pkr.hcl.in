@@ -12,7 +12,7 @@ source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
   vm_name          = "%%VM_NAME%%"
-  headless         = false
+  headless         = true
   guest_os_type    = "%%GUEST_OS_TYPE%%"
   version          = 22
   cores            = 2
@@ -26,38 +26,16 @@ source "vmware-iso" "buildvm" {
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
-  boot_command     = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed.cfg netcfg/get_hostname={{ .Name }}<enter>"]
+  #boot_command     = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed.cfg netcfg/get_hostname={{ .Name }}<enter>"]
+  boot_command     = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed.cfg<wait><enter>"]
 }
 
 build {
   sources = ["source.vmware-iso.buildvm"]
 
-  provisioner "shell" {
-    inline = [<<EOF
-#!/usr/bin/env bash
-
-set -ex
-umask 022
-
-echo 'Starting OS customization and software installation...'
-
-sudo systemctl stop cron
-sudo systemctl stop systemd-journald-dev-log.socket
-sudo systemctl stop systemd-journald-audit.socket
-sudo systemctl stop systemd-journald.socket
-sudo systemctl stop systemd-journald
-sudo apt-get -y update
-sudo apt-get install -y cloud-init open-vm-tools
-sudo cloud-init clean --logs --seed --machine-id
-sudo rm -f /etc/ssh/ssh_host_*
-sudo rm -rf /var/log/journal/*
-dpkg -l | grep -- linux-headers | awk '{print $2}' | xargs -r sudo dpkg -P
-sudo rm -rf /var/cache/apt/*
-sudo find /var/log/ -type f -print -delete
-mkdir -p /home/vagrant/.ssh && chmod 700 /home/vagrant/.ssh && curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
-sudo sync
-EOF
-    ]
+  provisioner "file" {
+    source = "debian-12.bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
   }
 
   provisioner "file" {
@@ -66,6 +44,6 @@ EOF
   }
 
   provisioner "shell" {
-    inline = ["sudo install -m644 /tmp/cloud.cfg /etc/cloud/ && rm -f /tmp/cloud.cfg"]
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
   }
 }

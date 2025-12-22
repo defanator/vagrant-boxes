@@ -16,10 +16,14 @@ Vagrant.configure("2") do |config|
     mem = 1024
   end
 
+  # to resize primary disk, uncomment the next line
+  # config.vm.disk :disk, size: "15GB", primary: true
+
   config.vm.provider "vmware_desktop" do |vmw, override|
     vmw.cpus = cpus
     vmw.memory = mem
-    vmw.gui = true
+    vmw.gui = false
+    vmw.linked_clone = false
   end
 
   config.ssh.forward_agent = true
