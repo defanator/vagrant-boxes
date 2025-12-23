@@ -76,6 +76,7 @@ $(DST_VMDIR):
 
 $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 	sed \
+		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
 		-e "s,%%OSARCH%%,$(OSARCH),g" \
 		-e "s,%%ISO_ARCH%%,$(ISO_ARCH),g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \

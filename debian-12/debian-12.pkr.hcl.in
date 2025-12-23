@@ -20,6 +20,7 @@ source "vmware-iso" "buildvm" {
   vm_name          = "%%VM_NAME%%"
   headless         = false
   guest_os_type    = "%%GUEST_OS_TYPE%%"
+  firmware         = "%%FIRMWARE%%"
   version          = 22
   cores            = 2
   memory           = 4096
