@@ -8,11 +8,17 @@ packer {
   }
 }
 
+variable "boot_command" {
+  type        = list(string)
+  default     = null
+  description = "Keystrokes to initiate automated install"
+}
+
 source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
   vm_name          = "%%VM_NAME%%"
-  headless         = true
+  headless         = false
   guest_os_type    = "%%GUEST_OS_TYPE%%"
   version          = 22
   cores            = 2
@@ -21,13 +27,16 @@ source "vmware-iso" "buildvm" {
   disk_adapter_type = "sata"
   network_adapter_type = "vmxnet3"
   usb              = true
+  vmx_data = {
+    # enable USB 3 - Debian 12 on arm64 could lose keyboard after grub with USB 2.0 for some reason
+    "usb_xhci.present" = "true"
+  }
   http_directory   = "%%HTTP_DIRECTORY%%"
   communicator     = "ssh"
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
-  #boot_command     = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed.cfg netcfg/get_hostname={{ .Name }}<enter>"]
-  boot_command     = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed.cfg<wait><enter>"]
+  boot_command     = var.boot_command
 }
 
 build {

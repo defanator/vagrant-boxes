@@ -85,19 +85,22 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
+$(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl: $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl
+	cp $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $@
+
 $(DST_VMDIR)/debian-12.bootstrap.sh: $(_TOPDIR)/debian-12.bootstrap.sh | $(DST_VMDIR)
 	cp $(_TOPDIR)/debian-12.bootstrap.sh $@
 
 $(DST_VMDIR)/cloud.cfg: $(_TOPDIR)/cloud.cfg | $(DST_VMDIR)
 	cp $(_TOPDIR)/cloud.cfg $@
 
-dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/debian-12.bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $(DST_VMDIR)/debian-12.bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
 	echo "building..." && \
 	export PACKER_LOG=1 && \
 	cd $(DST_VMDIR) && \
-	packer build $(PACKER_ARGS) .
+	packer build $(PACKER_ARGS) --var-file=$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "$$(grep -- vmdk $@ | cut -d '"' -f 2)"); do \
 		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
 		continue ; \
