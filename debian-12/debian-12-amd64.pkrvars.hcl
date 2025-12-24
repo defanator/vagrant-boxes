@@ -1,1 +1,1 @@
-boot_command = ["<wait><esc><wait>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed-amd64.cfg<wait><enter>"]
+boot_command = ["<wait><tab><wait><leftCtrlOn>u<leftCtrlOff>/install.amd/vmlinuz auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed-amd64.cfg netcfg/get_hostname=debian netcfg/get_domain= initrd=/install.amd/initrd.gz<enter>"]
