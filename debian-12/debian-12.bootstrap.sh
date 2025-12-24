@@ -15,8 +15,9 @@ apt-get update -y
 apt-get install -y cloud-init open-vm-tools
 
 # initiate cloud-init for next fresh boot
-cloud-init clean --logs --seed --machine-id
+cloud-init clean --logs --seed
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
+truncate -s 0 /etc/machine-id
 
 # remove existing host keys (these should be regenerated on a first boot)
 sudo rm -f /etc/ssh/ssh_host_*
