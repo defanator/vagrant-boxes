@@ -18,7 +18,7 @@ source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
   vm_name          = "%%VM_NAME%%"
-  headless         = false
+  headless         = true
   guest_os_type    = "%%GUEST_OS_TYPE%%"
   firmware         = "%%FIRMWARE%%"
   version          = 22
@@ -38,6 +38,7 @@ source "vmware-iso" "buildvm" {
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
   boot_command     = var.boot_command
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {
