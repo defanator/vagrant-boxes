@@ -13,7 +13,7 @@ else
 ARCH := $(OSARCH)
 endif
 
-IMAGES := $(shell find $(TOPDIR)/ -mindepth 2 -type f -name Makefile | awk -F'/' '{print $$(NF-1)}')
+IMAGES := $(shell find $(TOPDIR)/ -mindepth 2 -type f -name Makefile | awk -F'/' '{print $$(NF-1)}' | sort)
 
 _reverse = $(if $(1),$(call _reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 

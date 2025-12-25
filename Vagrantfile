@@ -52,4 +52,9 @@ Vagrant.configure("2") do |config|
     debian12.vm.box = "defanator/debian-12"
     debian12.vm.hostname = "debian12"
   end
+
+  config.vm.define "debian13", autostart: false do |debian13|
+    debian13.vm.box = "defanator/debian-13"
+    debian13.vm.hostname = "debian13"
+  end
 end

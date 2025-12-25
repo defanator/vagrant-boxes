@@ -12,6 +12,8 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Amazon Linux 2023** - [amazonlinux-2023/](amazonlinux-2023/)
 - **Rocky Linux 9** - [rockylinux-9/](rockylinux-9/)
 - **Rocky Linux 10** - [rockylinux-10/](rockylinux-10/)
+- **Debian 12 "bookworm"** - [debian-12](debian-12/)
+- **Debian 13 "trixie"** - [debian-13](debian-13/)
 
 Both images support:
 - x86_64 (amd64) architecture
