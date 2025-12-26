@@ -1,8 +1,10 @@
 # Vagrant boxes
 
-This repository provides automated build tools for creating Vagrant boxes from Amazon Linux images.
-It supports building Vagrant boxes for VMware desktop environments using Packer.
-For now it is intended to be used on macOS hosts, but adding Linux support should be relatively easy.
+This repository provides automated build tools for creating Vagrant boxes from multiple Linux distributions, including Amazon Linux, Rocky Linux, and Debian.
+
+It supports building boxes from various source formats using [Packer](https://developer.hashicorp.com/packer/docs/intro), including pre-built KVM/qcow2 images as well as traditional ISOs.
+
+Currently designed for macOS hosts and VMware providers, but adding support for Linux hosts (including WSL) and additional providers should be straightforward.
 
 Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicorp.com/vagrant/discover/defanator](https://portal.cloud.hashicorp.com/vagrant/discover/defanator)
 
