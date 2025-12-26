@@ -86,8 +86,8 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
-$(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl: $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl
-	cp $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $@
+$(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl: $(_TOPDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl
+	cp $(_TOPDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $@
 
 $(DST_VMDIR)/debian-13.bootstrap.sh: $(_TOPDIR)/debian-13.bootstrap.sh | $(DST_VMDIR)
 	cp $(_TOPDIR)/debian-13.bootstrap.sh $@

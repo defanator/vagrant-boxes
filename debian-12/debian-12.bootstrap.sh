@@ -19,6 +19,12 @@ cloud-init clean --logs --seed
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
 truncate -s 0 /etc/machine-id
 
+# remove existing interface settings
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+rm -f /etc/network/interfaces.d/50-cloud-init
+primary_iface=$(ip -br a | awk '!/(^lo)|UNKNOWN/ {print $1; exit}')
+sed -i "/${primary_iface}/s/^/#/" /etc/network/interfaces
+
 # remove existing host keys (these should be regenerated on a first boot)
 rm -f /etc/ssh/ssh_host_*
 
