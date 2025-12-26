@@ -66,7 +66,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 	curl -fLO --progress-bar $(ISO_IMG_URL) && \
 	sha256sum -c $(ISO_SHASUM)
 
-fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Debian 12 ISO image
+fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Debian 13 ISO image
 
 srcvm:
 	$(error this builder does not require srcvm)
