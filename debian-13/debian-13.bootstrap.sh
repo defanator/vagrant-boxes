@@ -19,6 +19,11 @@ cloud-init clean --logs --seed
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
 truncate -s 0 /etc/machine-id
 
+# apply workaround for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1110071
+pushd /usr/lib/python3/dist-packages/cloudinit
+patch -p1 </tmp/cloud-init-dhcp6-disable.patch
+popd
+
 # remove existing interface settings
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 rm -f /etc/network/interfaces.d/50-cloud-init

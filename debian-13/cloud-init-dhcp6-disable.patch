@@ -1,0 +1,24 @@
+--- a/net/eni.py	2025-12-25 04:48:06.797832358 +0000
++++ b/net/eni.py	2025-12-25 04:47:38.809342345 +0000
+@@ -166,10 +166,17 @@
+     subst = iface.copy()
+     subst.update({"fullname": fullname, "cverb": cverb})
+ 
+-    lines = [
+-        "{cverb} {fullname}".format(**subst),
+-        "iface {fullname} {inet} {mode}".format(**subst),
+-    ]
++    if subst["inet"] == 'inet6' and subst["mode"] == 'dhcp':
++        lines = [
++            "{cverb} {fullname}".format(**subst),
++            "# Debian 13 bug with ifup, DHCPv6, and dhcpd - https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1110071",
++            "# iface {fullname} {inet} {mode}".format(**subst),
++        ]
++    else:
++        lines = [
++            "{cverb} {fullname}".format(**subst),
++            "iface {fullname} {inet} {mode}".format(**subst),
++        ]
+     if render_hwaddress and iface.get("mac_address"):
+         lines.append("    hwaddress {mac_address}".format(**subst))
+ 

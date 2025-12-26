@@ -1,8 +1,10 @@
 # Vagrant boxes
 
-This repository provides automated build tools for creating Vagrant boxes from Amazon Linux images.
-It supports building Vagrant boxes for VMware desktop environments using Packer.
-For now it is intended to be used on macOS hosts, but adding Linux support should be relatively easy.
+This repository provides automated build tools for creating Vagrant boxes from multiple Linux distributions, including Amazon Linux, Rocky Linux, and Debian.
+
+It supports building boxes from various source formats using [Packer](https://developer.hashicorp.com/packer/docs/intro), including pre-built KVM/qcow2 images as well as traditional ISOs.
+
+Currently designed for macOS hosts and VMware providers, but adding support for Linux hosts (including WSL) and additional providers should be straightforward.
 
 Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicorp.com/vagrant/discover/defanator](https://portal.cloud.hashicorp.com/vagrant/discover/defanator)
 
@@ -12,10 +14,12 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Amazon Linux 2023** - [amazonlinux-2023/](amazonlinux-2023/)
 - **Rocky Linux 9** - [rockylinux-9/](rockylinux-9/)
 - **Rocky Linux 10** - [rockylinux-10/](rockylinux-10/)
+- **Debian 12 "bookworm"** - [debian-12](debian-12/)
+- **Debian 13 "trixie"** - [debian-13](debian-13/)
 
-Both images support:
+Each image supports:
 - x86_64 (amd64) architecture
-- ARM64 architecture (with EFI firmware)
+- aarch64 (arm64) architecture with EFI firmware
 
 ## Prerequisites
 
@@ -86,9 +90,9 @@ make show-env-amazonlinux-2
 
 The build process consists of several stages:
 
-1. **Fetch**: Downloads latest official Amazon Linux KVM image (in QCOW2 format)
-2. **Convert**: Converts the QCOW2 image to VMDK format for VMware compatibility
-3. **Prepare**: Creates source VM configuration and cloud-init seed ISO
+1. **Fetch**: Downloads latest official image (could be installation/live ISO or prebuilt KVM/qcow2 disk image)
+2. **Convert**: Converts the qcow2 image to VMDK format for VMware compatibility (optional stage)
+3. **Prepare**: Creates source VM configuration with extra data if required (like e.g. cloud-init seed ISO for Amazon Linux)
 4. **Build**: Uses Packer to customize the VM and install necessary components
 5. **Package**: Creates the final Vagrant box file
 

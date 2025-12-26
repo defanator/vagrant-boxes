@@ -1,1 +1,1 @@
-boot_command = ["<wait>c<wait>linux /install.a64/vmlinuz auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/preseed-arm64.cfg netcfg/get_hostname=debian netcfg/get_domain=<enter>initrd /install.a64/initrd.gz<enter>boot<enter>"]
+boot_command = ["<wait>c<wait>linux /install.a64/vmlinuz auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debian/debian-12-preseed-arm64.cfg netcfg/get_hostname=debian netcfg/get_domain=<enter>initrd /install.a64/initrd.gz<enter>boot<enter>"]

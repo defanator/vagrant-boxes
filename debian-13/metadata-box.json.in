@@ -1,0 +1,15 @@
+{
+  "name": "defanator/debian-13",
+  "versions": [
+    {
+      "version": "%%VERSION%%",
+      "providers": [
+        {
+          "name": "vmware_desktop",
+          "architecture": "%%ARCH%%",
+          "url": "debian-13-v%%VERSION%%-%%ARCH%%.box"
+        }
+      ]
+    }
+  ]
+}
