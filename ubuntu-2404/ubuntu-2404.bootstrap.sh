@@ -40,7 +40,7 @@ rm -f /etc/ssh/ssh_host_*
 dpkg -l | awk '{print $2}' | grep -- "linux-headers" | xargs -r apt-get -y purge
 dpkg -l | awk '{print $2}' | grep -- "linux-image-[1-9].*" | grep -v -- "$(uname -r)" | xargs -r apt-get -y purge
 dpkg -l | awk '{print $2}' | grep -- '-dev\(:[a-z0-9]\+\)\?$' | grep -v -- "systemd-dev" | xargs -r apt-get -y purge
-apt-get purge -y libx11-data xauth libxmuu1 libx11-6 libxext6 intel-microcode unattended-upgrades
+apt-get purge -y libx11-data xauth libxmuu1 libx11-6 libxext6 intel-microcode unattended-upgrades linux-firmware
 apt-get autoremove -y --purge
 
 # remove cache
