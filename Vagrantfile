@@ -19,14 +19,23 @@ Vagrant.configure("2") do |config|
   # to resize primary disk, uncomment the next line
   # config.vm.disk :disk, size: "15GB", primary: true
 
+  vnc_port = rand(5901..5999).to_s
+
   config.vm.provider "vmware_desktop" do |vmw, override|
     vmw.cpus = cpus
     vmw.memory = mem
     vmw.gui = false
     vmw.linked_clone = false
+    vmw.vmx["RemoteDisplay.vnc.enabled"] = "TRUE"
+    vmw.vmx["RemoteDisplay.vnc.port"] = vnc_port
+    vmw.vmx["RemoteDisplay.vnc.password"] = "12345"
   end
 
   config.ssh.forward_agent = true
+
+  if ARGV.include?("up") || ARGV.include?("reload")
+    puts "VNC enabled on port: #{vnc_port}"
+  end
 
   config.vm.define "al2", autostart: false do |al2|
     al2.vm.box = "defanator/amazonlinux-2"
@@ -56,5 +65,10 @@ Vagrant.configure("2") do |config|
   config.vm.define "debian13", autostart: false do |debian13|
     debian13.vm.box = "defanator/debian-13"
     debian13.vm.hostname = "debian13"
+  end
+
+  config.vm.define "ubuntu2404", autostart: false do |ubuntu2404|
+    ubuntu2404.vm.box = "defanator/ubuntu-24.04"
+    ubuntu2404.vm.hostname = "ubuntu2404"
   end
 end
