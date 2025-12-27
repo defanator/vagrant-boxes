@@ -12,17 +12,18 @@ autoinstall:
         id: disk-main
         path: /dev/sda
         ptable: msdos
-        wipe: superblock
-        preserve: false
+#        wipe: superblock
+#        preserve: false
         grub_device: true
 
       - type: partition
         id: partition-root
         device: disk-main
+        offset: 2048
         size: -1
         flag: boot
-        wipe: superblock
-        preserve: false
+#        wipe: superblock
+#        preserve: false
 #        grub_device: true
 
       - type: format
