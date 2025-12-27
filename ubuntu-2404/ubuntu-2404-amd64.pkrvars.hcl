@@ -1,1 +1,1 @@
-boot_command = ["<wait><tab><wait><leftCtrlOn>u<leftCtrlOff>/install.amd/vmlinuz auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu/ubuntu-2404-preseed-amd64.cfg netcfg/get_hostname=ubuntu netcfg/get_domain= initrd=/install.amd/initrd.gz<enter>"]
+boot_command = ["<wait>c<wait>linux /casper/vmlinuz autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu2404-amd64/<enter>initrd /casper/initrd<enter>boot<enter>"]

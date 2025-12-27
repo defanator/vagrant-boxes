@@ -30,10 +30,12 @@ ifeq ($(OSARCH),x86_64)
 GUEST_OS_TYPE := ubuntu-64
 FIRMWARE ?= bios
 ISO_ARCH := amd64
+UBUNTU2404_IMAGES_URL := https://releases.ubuntu.com/noble
 else ifeq ($(OSARCH),arm64)
 GUEST_OS_TYPE := arm-ubuntu-64
 FIRMWARE ?= efi
 ISO_ARCH := $(OSARCH)
+UBUNTU2404_IMAGES_URL := https://cdimage.ubuntu.com/releases/24.04/release
 else
 $(error unknown OSARCH: $(OSARCH))
 endif
@@ -45,7 +47,6 @@ DESTDIR ?= $(_WORKDIR)/output
 UBUNTU2404_VERSION := 24.04.3
 UBUNTU2404_REV ?= $(shell date +"%Y%m%d").1
 
-UBUNTU2404_IMAGES_URL := https://cdimage.ubuntu.com/releases/24.04/release
 
 ISO_IMG_URL := $(UBUNTU2404_IMAGES_URL)/ubuntu-$(UBUNTU2404_VERSION)-live-server-$(ISO_ARCH).iso
 ISO_SHASUM_URL := $(UBUNTU2404_IMAGES_URL)/SHA256SUMS

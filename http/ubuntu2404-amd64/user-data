@@ -1,0 +1,58 @@
+#cloud-config
+autoinstall:
+  version: 1
+  source:
+    id: ubuntu-server-minimal
+  updates: all
+  storage:
+#    layout:
+#      name: direct
+    config:
+      - type: disk
+        id: disk-main
+        path: /dev/sda
+        ptable: msdos
+        wipe: superblock
+        preserve: false
+        grub_device: true
+
+      - type: partition
+        id: partition-root
+        device: disk-main
+        size: -1
+        flag: boot
+        wipe: superblock
+        preserve: false
+#        grub_device: true
+
+      - type: format
+        id: format-root
+        fstype: ext4
+        volume: partition-root
+
+      - type: mount
+        id: mount-root
+        device: format-root
+        path: /
+#    grub:
+#      install_devices:
+#        - /dev/sda
+  identity:
+    hostname: vagrant
+    username: vagrant
+    password: '$6$rounds=4096$5CU3LEj/MQvbkfPb$LmKEF9pCfU8R.dA.GemgE/8GT6r9blge3grJvdsVTMFKyLEQwzEF3SGWqAzjawY/XHRpWj4fOiLBrRyxJhIRJ1'
+  early-commands:
+    # otherwise packer tries to connect and exceed max attempts:
+    - systemctl stop ssh.service
+    - systemctl stop ssh.socket
+    - dd if=/dev/zero of=/dev/sda bs=1024k count=10
+    - wipefs -a /dev/sda
+  ssh:
+    install-server: yes
+    allow-pw: yes
+  late-commands:
+    - |
+      if [ -f /target/etc/netplan/00-installer-config.yaml ]; then
+        sed -i "s/dhcp4: true/&\n      dhcp-identifier: mac/" /target/etc/netplan/00-installer-config.yaml
+      fi
+    - echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/vagrant
