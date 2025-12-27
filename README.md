@@ -16,6 +16,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Rocky Linux 10** - [rockylinux-10/](rockylinux-10/)
 - **Debian 12 "bookworm"** - [debian-12](debian-12/)
 - **Debian 13 "trixie"** - [debian-13](debian-13/)
+- **Ubuntu 24.04 "noble"** - [ubuntu-2404](ubuntu-2404/)
 
 Each image supports:
 - x86_64 (amd64) architecture
