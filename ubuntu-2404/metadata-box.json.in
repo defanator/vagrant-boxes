@@ -1,5 +1,5 @@
 {
-  "name": "defanator/ubuntu-2404",
+  "name": "defanator/ubuntu-24.04",
   "versions": [
     {
       "version": "%%VERSION%%",
