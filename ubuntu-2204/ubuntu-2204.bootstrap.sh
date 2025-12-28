@@ -52,6 +52,7 @@ rm -rf /var/cache/apparmor/*
 # clean up logs
 find /var/log/ -type f -print -delete
 rm -rf /var/log/journal/*
+rm -rf /var/log/installer /var/log/dist-upgrade /var/log/unattended-upgrades
 
 # install public key for vagrant user
 mkdir -p /home/vagrant/.ssh
