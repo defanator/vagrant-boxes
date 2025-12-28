@@ -52,12 +52,18 @@ rm -rf /var/cache/apparmor/*
 # clean up logs
 find /var/log/ -type f -print -delete
 rm -rf /var/log/journal/*
+rm -rf /var/log/installer /var/log/dist-upgrade /var/log/unattended-upgrades
+rm -f /var/log/README
 
 # install public key for vagrant user
 mkdir -p /home/vagrant/.ssh
 chmod 700 /home/vagrant/.ssh
 curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
 chown -R vagrant:vagrant /home/vagrant/.ssh
+
+# clean up user states
+rm -rf /home/vagrant/.cache
+find /home/vagrant/ -type f -name ".sudo*" -delete
 
 # remove systemd random seed so it could be regenerated at first boot
 rm -f /var/lib/systemd/random-seed
