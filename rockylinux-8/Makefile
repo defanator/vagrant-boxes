@@ -87,7 +87,10 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl: $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl
 	cp $(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $@
 
-dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl ## Prepare packer sources
+$(DST_VMDIR)/$(_IMAGE).bootstrap.sh: $(_IMAGE).bootstrap.sh | $(DST_VMDIR)
+	cp $(_IMAGE).bootstrap.sh $@
+
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $(DST_VMDIR)/$(_IMAGE).bootstrap.sh ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
 	echo "building..." && \
