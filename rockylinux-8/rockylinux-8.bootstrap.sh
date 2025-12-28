@@ -42,7 +42,7 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 # remove systemd random seed so it could be regenerated at first boot
 rm -f /var/lib/systemd/random-seed
 
-# remove existing host keys (these should be regenerated on a first boot
+# remove existing host keys (these should be regenerated on a first boot)
 rm -f /etc/ssh/ssh_host_*
 
 # synchronize cached writes to persistent storage
