@@ -8,9 +8,9 @@ REFS    += $(_SELF)
 SHOW_ENV_VARS += \
 	FIRMWARE \
 	GUEST_OS_TYPE \
-	UBUNTU2404_VERSION \
-	UBUNTU2404_REV \
-	UBUNTU2404_IMAGES_URL \
+	UBUNTU2204_VERSION \
+	UBUNTU2204_REV \
+	UBUNTU2204_IMAGES_URL \
 	ISO_IMG_URL \
 	ISO_SHASUM_URL \
 	ISO_IMG \
@@ -30,12 +30,12 @@ ifeq ($(OSARCH),x86_64)
 GUEST_OS_TYPE := ubuntu-64
 FIRMWARE ?= bios
 ISO_ARCH := amd64
-UBUNTU2404_IMAGES_URL := https://releases.ubuntu.com/noble
+UBUNTU2204_IMAGES_URL := https://releases.ubuntu.com/jammy
 else ifeq ($(OSARCH),arm64)
 GUEST_OS_TYPE := arm-ubuntu-64
 FIRMWARE ?= efi
 ISO_ARCH := $(OSARCH)
-UBUNTU2404_IMAGES_URL := https://cdimage.ubuntu.com/releases/24.04/release
+UBUNTU2204_IMAGES_URL := https://cdimage.ubuntu.com/releases/22.04/release
 else
 $(error unknown OSARCH: $(OSARCH))
 endif
@@ -44,12 +44,12 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-UBUNTU2404_VERSION := 24.04.3
-UBUNTU2404_REV ?= $(shell date +"%Y%m%d").1
+UBUNTU2204_VERSION := 22.04.5
+UBUNTU2204_REV ?= $(shell date +"%Y%m%d").1
 
 
-ISO_IMG_URL := $(UBUNTU2404_IMAGES_URL)/ubuntu-$(UBUNTU2404_VERSION)-live-server-$(ISO_ARCH).iso
-ISO_SHASUM_URL := $(UBUNTU2404_IMAGES_URL)/SHA256SUMS
+ISO_IMG_URL := $(UBUNTU2204_IMAGES_URL)/ubuntu-$(UBUNTU2204_VERSION)-live-server-$(ISO_ARCH).iso
+ISO_SHASUM_URL := $(UBUNTU2204_IMAGES_URL)/SHA256SUMS
 
 ISO_IMG := $(shell basename $(ISO_IMG_URL))
 ISO_SHASUM := $(shell basename $(ISO_SHASUM_URL))
@@ -67,7 +67,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 	curl -fLO --progress-bar $(ISO_IMG_URL) && \
 	sha256sum -c $(ISO_SHASUM)
 
-fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Ubuntu 24.04 "noble" ISO image
+fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Ubuntu 22.04 "jammy" ISO image
 
 srcvm:
 	$(error this builder does not require srcvm)
@@ -90,13 +90,13 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl: $(_TOPDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl
 	cp $(_TOPDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $@
 
-$(DST_VMDIR)/ubuntu-2404.bootstrap.sh: $(_TOPDIR)/ubuntu-2404.bootstrap.sh | $(DST_VMDIR)
-	cp $(_TOPDIR)/ubuntu-2404.bootstrap.sh $@
+$(DST_VMDIR)/ubuntu-2204.bootstrap.sh: $(_TOPDIR)/ubuntu-2204.bootstrap.sh | $(DST_VMDIR)
+	cp $(_TOPDIR)/ubuntu-2204.bootstrap.sh $@
 
 $(DST_VMDIR)/cloud.cfg: $(_TOPDIR)/cloud.cfg | $(DST_VMDIR)
 	cp $(_TOPDIR)/cloud.cfg $@
 
-dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $(DST_VMDIR)/ubuntu-2404.bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE)-$(ISO_ARCH).pkrvars.hcl $(DST_VMDIR)/ubuntu-2204.bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
 	echo "building..." && \
@@ -134,19 +134,19 @@ boxvm: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant 
 $(DESTDIR):
 	mkdir -p $@
 
-$(DESTDIR)/$(_IMAGE)-v$(UBUNTU2404_VERSION)-$(UBUNTU2404_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+$(DESTDIR)/$(_IMAGE)-v$(UBUNTU2204_VERSION)-$(UBUNTU2204_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
 	cd $(BOX_VMDIR) && tar -czvf $@ *
 
 $(DESTDIR)/metadata.json: $(_TOPDIR)/metadata-box.json.in | $(DESTDIR)
 	sed \
 		-e "s,%%ARCH%%,$(ARCH),g" \
-		-e "s,%%VERSION%%,$(UBUNTU2404_VERSION)-$(UBUNTU2404_REV),g" \
+		-e "s,%%VERSION%%,$(UBUNTU2204_VERSION)-$(UBUNTU2204_REV),g" \
 	< $(_TOPDIR)/metadata-box.json.in > $@
 
-$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(UBUNTU2404_VERSION)-$(UBUNTU2404_REV)-$(ARCH).box
-	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(UBUNTU2404_VERSION)-$(UBUNTU2404_REV)-$(ARCH).box | tee $@
+$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(UBUNTU2204_VERSION)-$(UBUNTU2204_REV)-$(ARCH).box
+	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(UBUNTU2204_VERSION)-$(UBUNTU2204_REV)-$(ARCH).box | tee $@
 
-box: $(DESTDIR)/$(_IMAGE)-v$(UBUNTU2404_VERSION)-$(UBUNTU2404_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
+box: $(DESTDIR)/$(_IMAGE)-v$(UBUNTU2204_VERSION)-$(UBUNTU2204_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
 
 .PHONY: preclean
 preclean:
