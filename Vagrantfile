@@ -72,6 +72,11 @@ Vagrant.configure("2") do |config|
     debian13.vm.hostname = "debian13"
   end
 
+  config.vm.define "ubuntu2204", autostart: false do |ubuntu2204|
+    ubuntu2204.vm.box = "defanator/ubuntu-22.04"
+    ubuntu2204.vm.hostname = "ubuntu2204"
+  end
+
   config.vm.define "ubuntu2404", autostart: false do |ubuntu2404|
     ubuntu2404.vm.box = "defanator/ubuntu-24.04"
     ubuntu2404.vm.hostname = "ubuntu2404"
