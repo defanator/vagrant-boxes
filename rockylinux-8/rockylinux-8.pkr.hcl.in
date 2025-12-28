@@ -33,6 +33,7 @@ source "vmware-iso" "buildvm" {
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
   boot_command     = var.boot_command
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {

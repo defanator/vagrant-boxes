@@ -1,5 +1,5 @@
 {
-  "name": "defanator/rockylinux-9",
+  "name": "defanator/rockylinux-8",
   "versions": [
     {
       "version": "%%VERSION%%",
@@ -7,7 +7,7 @@
         {
           "name": "vmware_desktop",
           "architecture": "%%ARCH%%",
-          "url": "rockylinux-9-v%%VERSION%%-%%ARCH%%.box"
+          "url": "rockylinux-8-v%%VERSION%%-%%ARCH%%.box"
         }
       ]
     }
