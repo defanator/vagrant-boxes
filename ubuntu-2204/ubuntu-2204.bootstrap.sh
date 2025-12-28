@@ -60,6 +60,10 @@ chmod 700 /home/vagrant/.ssh
 curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
 chown -R vagrant:vagrant /home/vagrant/.ssh
 
+# clean up user states
+rm -rf /home/vagrant/.cache
+find /home/vagrant/ -type f -name ".sudo*" -delete
+
 # remove systemd random seed so it could be regenerated at first boot
 rm -f /var/lib/systemd/random-seed
 
