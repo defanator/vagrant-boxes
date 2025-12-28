@@ -47,6 +47,11 @@ Vagrant.configure("2") do |config|
     al2023.vm.hostname = "amazonlinux2023"
   end
 
+  config.vm.define "rocky8", autostart: false do |rocky8|
+    rocky8.vm.box = "defanator/rockylinux-8"
+    rocky8.vm.hostname = "rockylinux8"
+  end
+
   config.vm.define "rocky9", autostart: false do |rocky9|
     rocky9.vm.box = "defanator/rockylinux-9"
     rocky9.vm.hostname = "rockylinux9"

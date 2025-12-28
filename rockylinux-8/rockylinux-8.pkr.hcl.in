@@ -1,0 +1,50 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+variable "boot_command" {
+  type        = list(string)
+  default     = null
+  description = "Keystrokes to initiate automated install"
+}
+
+source "vmware-iso" "buildvm" {
+  iso_url          = "%%ISO_URL%%"
+  iso_checksum     = "%%ISO_CHECKSUM%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = true
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
+  version          = 22
+  cores            = 2
+  memory           = 4096
+  disk_size        = 8000
+  disk_adapter_type = "sata"
+  network_adapter_type = "vmxnet3"
+  usb              = true
+  http_directory   = "%%HTTP_DIRECTORY%%"
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+  boot_command     = var.boot_command
+  shutdown_command = "sudo /sbin/poweroff"
+}
+
+build {
+  sources = ["source.vmware-iso.buildvm"]
+
+  provisioner "file" {
+    source = "rockylinux-8.bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+
+  provisioner "shell" {
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
+  }
+}
