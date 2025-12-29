@@ -117,6 +117,8 @@ $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	cd $(DST_VMDIR) && \
 	packer build $(PACKER_ARGS) .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
+		continue ; \
 		echo "Defragmenting $${vmdk}..." ; \
 		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
 		echo "Shrinking $${vmdk}..." ; \
