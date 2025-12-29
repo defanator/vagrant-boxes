@@ -7,9 +7,6 @@ umask 022
 systemctl stop systemd-journald.socket systemd-journald-audit.socket systemd-journald-dev-log.socket
 systemctl stop systemd-journald
 
-# install open-vm-tools
-dnf install -y open-vm-tools
-
 # initiate cloud-init for next fresh boot
 cloud-init clean --logs --seed
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
@@ -20,6 +17,10 @@ awk -i inplace '/console=ttyS/ {print "#" $0; gsub(/console=ttyS[^ "]* */, ""); 
      /^GRUB_TERMINAL_/ {print "#" $0; next}
      /^GRUB_TIMEOUT=/ {print "#" $0; print "GRUB_TIMEOUT=5"; next} 1' /etc/default/grub
 grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# update packages and install open-vm-tools
+dnf update -y
+dnf install -y open-vm-tools
 
 # clean up logs
 find /var/log/ -type f -print -delete
