@@ -11,6 +11,7 @@ SHOW_ENV_VARS += \
 	FEDORA_VERSION \
 	FEDORA_VERSION_FULL \
 	FEDORA_REV \
+	BOX_VERSION \
 	FEDORA_IMAGES_URL \
 	KVM_IMG_URL \
 	KVM_IMG \
@@ -43,7 +44,9 @@ DESTDIR ?= $(_WORKDIR)/output
 
 FEDORA_VERSION := 43
 FEDORA_VERSION_FULL := $(FEDORA_VERSION)-1.6
-FEDORA_REV ?= 1
+FEDORA_REV ?= $(shell date +"%Y%m%d").1
+
+BOX_VERSION := $(FEDORA_VERSION_FULL)-$(FEDORA_REV)
 
 ### https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2
 
@@ -147,19 +150,19 @@ boxvm: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant 
 $(DESTDIR):
 	mkdir -p $@
 
-$(DESTDIR)/$(_IMAGE)-v$(FEDORA_VERSION)-$(FEDORA_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+$(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
 	cd $(BOX_VMDIR) && tar -czvf $@ *
 
 $(DESTDIR)/metadata.json: $(_TOPDIR)/metadata-box.json.in | $(DESTDIR)
 	sed \
 		-e "s,%%ARCH%%,$(ARCH),g" \
-		-e "s,%%VERSION%%,$(FEDORA_VERSION)-$(FEDORA_REV),g" \
+		-e "s,%%VERSION%%,$(BOX_VERSION),g" \
 	< $(_TOPDIR)/metadata-box.json.in > $@
 
-$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(FEDORA_VERSION)-$(FEDORA_REV)-$(ARCH).box
-	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(FEDORA_VERSION)-$(FEDORA_REV)-$(ARCH).box | tee $@
+$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box
+	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box | tee $@
 
-box: $(DESTDIR)/$(_IMAGE)-v$(FEDORA_VERSION)-$(FEDORA_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
+box: $(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
 
 .PHONY: preclean
 preclean:
