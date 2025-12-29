@@ -1,0 +1,13 @@
+#cloud-config
+users:
+  - name: vagrant
+    lock_passwd: false
+    passwd: $6$TbOu26d1hYO4EC/D$MymO7cTo/tID7tkH8TtAGyAdaK9nHwGQfDD9KwQmql3xP1BPPc67YCmoR8UO3Dw5jacOx3GvnBLqvAmHLHC4H0
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+write_files:
+  - path: /etc/cloud/cloud.cfg.d/90_enable_ssh_pwauth.cfg
+    content: |
+      runcmd:
+        - rm -f /etc/ssh/sshd_config.d/50-cloud-init.conf
+        - systemctl restart sshd

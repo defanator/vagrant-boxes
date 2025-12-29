@@ -1,0 +1,15 @@
+{
+  "name": "defanator/fedora-cloud-43",
+  "versions": [
+    {
+      "version": "%%VERSION%%",
+      "providers": [
+        {
+          "name": "vmware_desktop",
+          "architecture": "%%ARCH%%",
+          "url": "fedora-cloud-43-v%%VERSION%%-%%ARCH%%.box"
+        }
+      ]
+    }
+  ]
+}
