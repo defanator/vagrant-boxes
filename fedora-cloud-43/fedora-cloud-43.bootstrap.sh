@@ -48,6 +48,9 @@ rm -f /etc/ssh/ssh_host_*
 sync
 
 # mumbo jumbo to give vmware-vdiskmanager more room for defragmenting and shrinking vmdk disk(s)
+# fedora uses btrfs with zstd compression, hence we need to disable compression for a target file first
+touch /home/vagrant/zeroes
+chattr +m /home/vagrant/zeroes
 if ! dd if=/dev/zero of=/home/vagrant/zeroes bs=64k; then
     sync
     rm -f /home/vagrant/zeroes
