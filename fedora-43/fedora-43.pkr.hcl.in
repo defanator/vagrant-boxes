@@ -16,6 +16,8 @@ source "vmware-vmx" "buildvm" {
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
+  boot_wait        = "30s"
+  boot_command     = ["5<enter><wait>1<enter><wait>3<enter><wait>vagrant<enter><wait>5<enter><wait>vagrant<enter><wait>vagrant<enter><wait>yes<enter><wait>c<enter><wait>c<enter><wait>"]
 }
 
 build {

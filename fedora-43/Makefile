@@ -109,7 +109,7 @@ $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	echo "building..." && \
 	export PACKER_LOG=1 && \
 	cd $(DST_VMDIR) && \
-	packer build . $(PACKER_ARGS)
+	packer build $(PACKER_ARGS) .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
 		echo "Defragmenting $${vmdk}..." ; \
 		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \

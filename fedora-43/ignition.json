@@ -1,0 +1,11 @@
+{
+  "ignition": { "version": "3.0.0" },
+  "passwd": {
+    "users": [
+      {
+        "name": "vagrant",
+        "passwordHash": "$6$TbOu26d1hYO4EC/D$MymO7cTo/tID7tkH8TtAGyAdaK9nHwGQfDD9KwQmql3xP1BPPc67YCmoR8UO3Dw5jacOx3GvnBLqvAmHLHC4H0"
+      }
+    ]
+  }
+}
