@@ -15,6 +15,12 @@ cloud-init clean --logs --seed
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
 truncate -s 0 /etc/machine_id
 
+# update grub config
+awk -i inplace '/console=ttyS/ {print "#" $0; gsub(/console=ttyS[^ "]* */, ""); print; next}
+     /^GRUB_TERMINAL_/ {print "#" $0; next}
+     /^GRUB_TIMEOUT=/ {print "#" $0; print "GRUB_TIMEOUT=5"; next} 1' /etc/default/grub
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
 # clean up logs
 find /var/log/ -type f -print -delete
 rm -rf /var/log/journal/*
