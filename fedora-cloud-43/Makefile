@@ -106,7 +106,10 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 $(DST_VMDIR)/$(_IMAGE).bootstrap.sh: $(_TOPDIR)/$(_IMAGE).bootstrap.sh | $(DST_VMDIR)
 	cp $(_TOPDIR)/$(_IMAGE).bootstrap.sh $@
 
-dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE).bootstrap.sh ## Prepare packer sources
+$(DST_VMDIR)/cloud.cfg: $(_TOPDIR)/cloud.cfg | $(DST_VMDIR)
+	cp $(_TOPDIR)/cloud.cfg $@
+
+dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE).bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	echo "building..." && \

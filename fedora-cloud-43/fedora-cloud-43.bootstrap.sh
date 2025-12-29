@@ -3,17 +3,19 @@
 set -ex
 umask 022
 
-dnf install -y open-vm-tools
-
+# stopping services
 systemctl stop systemd-journald.socket systemd-journald-audit.socket systemd-journald-dev-log.socket
 systemctl stop systemd-journald
 
+# install open-vm-tools
+dnf install -y open-vm-tools
+
+# initiate cloud-init for next fresh boot
 cloud-init clean --logs --seed
+install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
 truncate -s 0 /etc/machine_id
 
-rm -f /etc/ssh/ssh_host_*
-rm -rf /var/cache/yum
-
+# clean up logs
 find /var/log/ -type f -print -delete
 rm -rf /var/log/journal/*
 
@@ -23,8 +25,15 @@ chmod 700 /home/vagrant/.ssh
 curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
 chown -R vagrant:vagrant /home/vagrant/.ssh
 
+# remove cache
+rm -rf /var/cache/dnf
+rm -rf /var/cache/libdnf5
+
 # remove systemd random seed so it could be regenerated at first boot
 rm -f /var/lib/systemd/random-seed
+
+# remove existing host keys (these should be regenerated on a first boot)
+rm -f /etc/ssh/ssh_host_*
 
 # synchronize cached writes to persistent storage
 sync
