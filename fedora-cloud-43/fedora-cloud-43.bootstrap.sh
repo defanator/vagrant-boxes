@@ -25,6 +25,9 @@ chmod 700 /home/vagrant/.ssh
 curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
 chown -R vagrant:vagrant /home/vagrant/.ssh
 
+# remove existing interface settings
+find /etc/NetworkManager/system-connections/ -type f -name "*.nmconnection" -print -delete
+
 # remove cache
 rm -rf /var/cache/dnf
 rm -rf /var/cache/libdnf5
