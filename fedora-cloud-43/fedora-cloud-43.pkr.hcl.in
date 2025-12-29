@@ -16,6 +16,7 @@ source "vmware-vmx" "buildvm" {
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {
