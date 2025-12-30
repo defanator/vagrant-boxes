@@ -15,6 +15,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Rocky Linux 8** - [rockylinux-8/](rockylinux-8/)
 - **Rocky Linux 9** - [rockylinux-9/](rockylinux-9/)
 - **Rocky Linux 10** - [rockylinux-10/](rockylinux-10/)
+- **Fedora Cloud 43** - [fedora-cloud-43/](fedora-cloud-43/)
 - **Debian 12 "bookworm"** - [debian-12](debian-12/)
 - **Debian 13 "trixie"** - [debian-13](debian-13/)
 - **Ubuntu 22.04 "jammy"** - [ubuntu-2204](ubuntu-2204/)
