@@ -1,0 +1,38 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+source "vmware-vmx" "buildvm" {
+  source_path      = "%%VMX_PATH%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = true
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+  shutdown_command = "sudo /sbin/poweroff"
+}
+
+build {
+  sources = ["source.vmware-vmx.buildvm"]
+
+  provisioner "file" {
+    source = "fedora-cloud-43.bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+
+  provisioner "file" {
+    source = "cloud.cfg"
+    destination = "/tmp/cloud.cfg"
+  }
+
+  provisioner "shell" {
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
+  }
+}

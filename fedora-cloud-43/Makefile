@@ -8,9 +8,12 @@ REFS    += $(_SELF)
 SHOW_ENV_VARS += \
 	FIRMWARE \
 	GUEST_OS_TYPE \
-	AL2_IMAGES_LATEST_URL \
-	AL2_IMAGES_LATEST_VER_URL \
-	AL2_VERSION \
+	FEDORA_VERSION \
+	FEDORA_VERSION_FULL \
+	FEDORA_REV \
+	BOX_VERSION \
+	FEDORA_IMAGES_URL \
+	KVM_IMG_URL \
 	KVM_IMG \
 	VMDK_IMG
 
@@ -24,12 +27,14 @@ _WORKDIR := $(WORKDIR)/$(_IMAGE)
 
 ifeq ($(OSARCH),x86_64)
 KVM_PATH := kvm
-GUEST_OS_TYPE := other5xlinux-64
+GUEST_OS_TYPE := fedora-64
 FIRMWARE ?= bios
+ISO_ARCH := $(OSARCH)
 else
 KVM_PATH := kvm-arm64
-GUEST_OS_TYPE := arm-other5xlinux-64
+GUEST_OS_TYPE := arm-fedora-64
 FIRMWARE ?= efi
+ISO_ARCH := aarch64
 endif
 
 SRC_VMDIR ?= $(_WORKDIR)/packer-src.vmwarevm
@@ -37,14 +42,18 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-AL2_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/os-images/latest/
-AL2_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
-AL2_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL2_IMAGES_LATEST_VER_URL))
-AL2_VERSION := $(shell basename $(AL2_IMAGES_LATEST_VER_URL_STRIPPED))
-AL2_REV ?= 1
+FEDORA_VERSION := 43
+FEDORA_VERSION_FULL := $(FEDORA_VERSION)-1.6
+FEDORA_REV ?= $(shell date +"%Y%m%d").1
 
-KVM_IMG_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/amzn2-kvm-$(AL2_VERSION)-$(OSARCH).xfs.gpt.qcow2
-KVM_SHASUM_URL := $(AL2_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
+BOX_VERSION := $(FEDORA_VERSION_FULL)-$(FEDORA_REV)
+
+### https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2
+
+FEDORA_IMAGES_URL := https://download.fedoraproject.org/pub/fedora/linux/releases/$(FEDORA_VERSION)/Cloud/$(ISO_ARCH)/images
+
+KVM_IMG_URL := $(FEDORA_IMAGES_URL)/Fedora-Cloud-Base-Generic-$(FEDORA_VERSION_FULL).$(ISO_ARCH).qcow2
+KVM_SHASUM_URL := $(FEDORA_IMAGES_URL)/Fedora-Cloud-$(FEDORA_VERSION_FULL)-$(ISO_ARCH)-CHECKSUM
 KVM_IMG := $(shell basename $(KVM_IMG_URL))
 VMDK_IMG := $(subst qcow2,vmdk,$(KVM_IMG))
 
@@ -55,11 +64,11 @@ $(_WORKDIR):
 
 $(_WORKDIR)/$(KVM_IMG): | $(_WORKDIR)
 	cd $(_WORKDIR) && \
-	curl -fLO --progress-bar $(KVM_SHASUM_URL) && \
+	curl -fL --progress-bar $(KVM_SHASUM_URL) | grep -- "$(KVM_IMG)" >CHECKSUM && \
 	curl -fLO --progress-bar $(KVM_IMG_URL) && \
-	sha256sum -c SHA256SUMS
+	sha256sum -c CHECKSUM
 
-fetch: $(_WORKDIR)/$(KVM_IMG) ## Fetch Amazon Linux 2 original KVM/qcow2 image(s)
+fetch: $(_WORKDIR)/$(KVM_IMG) ## Fetch Fedora Cloud 43 original KVM/qcow2 image(s)
 
 $(_WORKDIR)/$(VMDK_IMG): $(_WORKDIR)/$(KVM_IMG)
 	cd $(_WORKDIR) && \
@@ -71,12 +80,12 @@ $(SRC_VMDIR):
 	mkdir -p $(SRC_VMDIR)
 
 $(SRC_VMDIR)/seed.iso: | $(SRC_VMDIR)
-	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata $(TOPDIR)/http/amazon/
+	hdiutil makehybrid -o $@ -hfs -joliet -iso -default-volume-name cidata $(TOPDIR)/http/fedora/
 
 $(SRC_VMDIR)/$(_IMAGE).vmx: $(_TOPDIR)/$(_IMAGE).vmx.in $(SRC_VMDIR)/seed.iso | $(SRC_VMDIR)
 	sed \
 		-e "s,%%VMDK_NAME%%,$(VMDK_IMG),g" \
-		-e "s,%%VERSION%%,$(AL2_VERSION),g" \
+		-e "s,%%VERSION%%,$(FEDORA_VERSION),g" \
 		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
@@ -97,14 +106,22 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%VM_NAME%%,$(_IMAGE),g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
-dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl ## Prepare packer sources
+$(DST_VMDIR)/$(_IMAGE).bootstrap.sh: $(_TOPDIR)/$(_IMAGE).bootstrap.sh | $(DST_VMDIR)
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap.sh $@
+
+$(DST_VMDIR)/cloud.cfg: $(_TOPDIR)/cloud.cfg | $(DST_VMDIR)
+	cp $(_TOPDIR)/cloud.cfg $@
+
+dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE).bootstrap.sh $(DST_VMDIR)/cloud.cfg ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	echo "building..." && \
 	export PACKER_LOG=1 && \
 	cd $(DST_VMDIR) && \
-	packer build .
+	packer build $(PACKER_ARGS) .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
+		continue ; \
 		echo "Defragmenting $${vmdk}..." ; \
 		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
 		echo "Shrinking $${vmdk}..." ; \
@@ -133,19 +150,19 @@ boxvm: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant 
 $(DESTDIR):
 	mkdir -p $@
 
-$(DESTDIR)/$(_IMAGE)-v$(AL2_VERSION)-$(AL2_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+$(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
 	cd $(BOX_VMDIR) && tar -czvf $@ *
 
 $(DESTDIR)/metadata.json: $(_TOPDIR)/metadata-box.json.in | $(DESTDIR)
 	sed \
 		-e "s,%%ARCH%%,$(ARCH),g" \
-		-e "s,%%VERSION%%,$(AL2_VERSION)-$(AL2_REV),g" \
+		-e "s,%%VERSION%%,$(BOX_VERSION),g" \
 	< $(_TOPDIR)/metadata-box.json.in > $@
 
-$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(AL2_VERSION)-$(AL2_REV)-$(ARCH).box
-	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(AL2_VERSION)-$(AL2_REV)-$(ARCH).box | tee $@
+$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box
+	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box | tee $@
 
-box: $(DESTDIR)/$(_IMAGE)-v$(AL2_VERSION)-$(AL2_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
+box: $(DESTDIR)/$(_IMAGE)-v$(BOX_VERSION)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
 
 .PHONY: preclean
 preclean:

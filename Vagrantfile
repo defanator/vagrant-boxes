@@ -62,6 +62,11 @@ Vagrant.configure("2") do |config|
     rocky10.vm.hostname = "rockylinux10"
   end
 
+  config.vm.define "fc43", autostart: false do |fc43|
+    fc43.vm.box = "defanator/fedora-cloud-43"
+    fc43.vm.hostname = "fc43"
+  end
+
   config.vm.define "debian12", autostart: false do |debian12|
     debian12.vm.box = "defanator/debian-12"
     debian12.vm.hostname = "debian12"

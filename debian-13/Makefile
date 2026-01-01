@@ -122,7 +122,7 @@ $(BOX_VMDIR):
 $(BOX_VMDIR)/$(_IMAGE).vmx: | $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx $(BOX_VMDIR)
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
 		vmdk_bn=$$(basename $${vmdk}) ; \
-		cd $(BOX_VMDIR) && ln -h ../packer-dst/output-buildvm/$${vmdk_bn} $${vmdk_bn} ; \
+		cd $(BOX_VMDIR) && ln ../packer-dst/output-buildvm/$${vmdk_bn} $${vmdk_bn} ; \
 	done
 	cat $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx | egrep -v -- \
 		"^displayname|^ethernet0.pcislotnumber|^extendedconfigfile|^nvme0.subnqnuuid|^nvram|^numa|^sata0:1|^remotedisplay.vnc|^uuid.bios|^uuid.location|^vc.uuid|^vmci0.id|^vmotion|^vmxstats.filename" \
