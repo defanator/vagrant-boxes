@@ -1,0 +1,58 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+source "vmware-iso" "buildvm" {
+  iso_url          = "%%ISO_URL%%"
+  iso_checksum     = "%%ISO_CHECKSUM%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = false
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
+  version          = 22
+  cores            = 2
+  memory           = 4096
+  disk_size        = 20000
+  disk_adapter_type = "sata"
+  network_adapter_type = "vmxnet3"
+  usb              = true
+  http_directory   = "%%HTTP_DIRECTORY%%"
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+  boot_wait        = "3s"
+  boot_command = [
+    "<wait>c<wait>",
+    "linux ($root)/boot/x86_64/loader/linux $${extra_cmdline} $${isoboot} ",
+    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-leap16/agama-profile.json<wait><enter>",
+    "initrd ($root)/boot/x86_64/loader/initrd<enter>",
+    "boot<enter>"
+  ]
+}
+
+build {
+  sources = ["source.vmware-iso.buildvm"]
+
+  provisioner "shell" {
+    inline = [<<EOF
+#!/usr/bin/env bash
+
+set -ex
+umask 022
+
+sudo zypper install -y cloud-init open-vm-tools
+sudo cloud-init clean --logs
+sudo truncate -s 0 /etc/machine-id
+sudo truncate -s 0 /etc/machine_id
+mkdir -p /home/vagrant/.ssh && chmod 700 /home/vagrant/.ssh && curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
+sudo sync
+EOF
+    ]
+  }
+}
