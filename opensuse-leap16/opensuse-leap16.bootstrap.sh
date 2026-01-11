@@ -62,6 +62,9 @@ rm -f /var/lib/systemd/random-seed
 # remove existing host keys (these should be regenerated on a first boot)
 rm -f /etc/ssh/ssh_host_*
 
+# remove root password
+passwd -d root
+
 # synchronize cached writes to persistent storage
 sync
 
