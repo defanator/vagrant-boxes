@@ -3,7 +3,7 @@
 set -ex
 umask 022
 
-zypper --non-interactive update
+#zypper --non-interactive update
 zypper --non-interactive install -y cloud-init open-vm-tools
 
 # stopping services
@@ -24,6 +24,9 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 
 # remove kernel firmware packages
 rpm -qa | grep -- "kernel-firmware" | xargs -r rpm -e
+
+# remove optional packages
+rpm -e glibc-locale
 
 # remove existing interface settings
 find /etc/NetworkManager/system-connections/ -type f -name "*.nmconnection" -print -delete

@@ -34,6 +34,7 @@ source "vmware-iso" "buildvm" {
     "initrd ($root)/boot/x86_64/loader/initrd<enter>",
     "boot<enter>"
   ]
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {

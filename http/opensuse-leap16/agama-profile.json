@@ -10,7 +10,6 @@
   "storage": {
     "drives": [
       {
-        "ptableType": "gpt",
         "partitions": [
           {
             "filesystem": {
@@ -29,8 +28,7 @@
         ]
       }
     ],
-    "volumeGroups": [],
-    "bootDevice": "/dev/sda1"
+    "volumeGroups": []
   },
   "user": {
     "fullName": "Vagrant",
