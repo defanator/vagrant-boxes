@@ -31,7 +31,7 @@ GUEST_OS_TYPE := opensuse-64
 FIRMWARE ?= bios
 ISO_ARCH := $(OSARCH)
 else ifeq ($(OSARCH),arm64)
-GUEST_OS_TYPE := arm-opensuse-64
+GUEST_OS_TYPE := arm-sles16-64
 FIRMWARE ?= efi
 ISO_ARCH := aarch64
 else

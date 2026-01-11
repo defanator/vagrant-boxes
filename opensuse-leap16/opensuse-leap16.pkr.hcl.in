@@ -21,6 +21,10 @@ source "vmware-iso" "buildvm" {
   disk_adapter_type = "sata"
   network_adapter_type = "vmxnet3"
   usb              = true
+  vmx_data = {
+    # enable USB 3
+    "usb_xhci.present" = "true"
+  }
   http_directory   = "%%HTTP_DIRECTORY%%"
   communicator     = "ssh"
   ssh_username     = "vagrant"
@@ -29,9 +33,9 @@ source "vmware-iso" "buildvm" {
   boot_wait        = "3s"
   boot_command = [
     "<wait>c<wait>",
-    "linux ($root)/boot/x86_64/loader/linux $${extra_cmdline} $${isoboot} ",
+    "linux ($root)/boot/%%ISO_ARCH%%/loader/linux $${extra_cmdline} $${isoboot} ",
     "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-leap16/agama-profile.json<wait><enter>",
-    "initrd ($root)/boot/x86_64/loader/initrd<enter>",
+    "initrd ($root)/boot/%%ISO_ARCH%%/loader/initrd<enter>",
     "boot<enter>"
   ]
   shutdown_command = "sudo /sbin/poweroff"
