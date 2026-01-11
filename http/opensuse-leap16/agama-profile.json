@@ -7,6 +7,31 @@
     "keyboard": "us",
     "timezone": "UTC"
   },
+  "storage": {
+    "drives": [
+      {
+        "ptableType": "gpt",
+        "partitions": [
+          {
+            "filesystem": {
+              "path": "/boot",
+              "type": "ext4"
+            },
+            "size": { "min": "512 MiB", "max": "512 MiB" }
+          },
+          {
+            "filesystem": {
+              "path": "/",
+              "type": "ext4"
+            },
+            "size": { "min": "6 GiB" }
+          }
+        ]
+      }
+    ],
+    "volumeGroups": [],
+    "bootDevice": "/dev/sda1"
+  },
   "user": {
     "fullName": "Vagrant",
     "userName": "vagrant",

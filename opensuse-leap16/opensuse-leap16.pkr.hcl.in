@@ -17,7 +17,7 @@ source "vmware-iso" "buildvm" {
   version          = 22
   cores            = 2
   memory           = 4096
-  disk_size        = 20000
+  disk_size        = 8000
   disk_adapter_type = "sata"
   network_adapter_type = "vmxnet3"
   usb              = true
@@ -39,20 +39,17 @@ source "vmware-iso" "buildvm" {
 build {
   sources = ["source.vmware-iso.buildvm"]
 
+  provisioner "file" {
+    source = "opensuse-leap16.bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+
+  provisioner "file" {
+    source = "cloud.cfg"
+    destination = "/tmp/cloud.cfg"
+  }
+
   provisioner "shell" {
-    inline = [<<EOF
-#!/usr/bin/env bash
-
-set -ex
-umask 022
-
-sudo zypper install -y cloud-init open-vm-tools
-sudo cloud-init clean --logs
-sudo truncate -s 0 /etc/machine-id
-sudo truncate -s 0 /etc/machine_id
-mkdir -p /home/vagrant/.ssh && chmod 700 /home/vagrant/.ssh && curl -fsSL -o /home/vagrant/.ssh/authorized_keys https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub
-sudo sync
-EOF
-    ]
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
   }
 }
