@@ -21,10 +21,10 @@ systemctl stop systemd-journald.socket systemd-journald-dev-log.socket
 systemctl stop systemd-journald
 
 # initiate cloud-init for next fresh boot
-cloud-init clean --logs --seed
+cloud-init clean --logs --seed --machine-id
 install -m644 /tmp/cloud.cfg /etc/cloud/cloud.cfg
-truncate -s 0 /etc/machine-id
 truncate -s 0 /etc/machine_id
+systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service
 
 # install public key for vagrant user
 mkdir -p /home/vagrant/.ssh
