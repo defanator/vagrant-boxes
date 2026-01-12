@@ -34,7 +34,7 @@ source "vmware-iso" "buildvm" {
   boot_command = [
     "<wait>c<wait>",
     "linux ($root)/boot/%%ISO_ARCH%%/loader/linux $${extra_cmdline} $${isoboot} ",
-    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-leap16/agama-profile.json<wait><enter>",
+    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-leap16/agama-profile-%%ISO_ARCH%%.json<wait><enter>",
     "initrd ($root)/boot/%%ISO_ARCH%%/loader/initrd<enter>",
     "boot<enter>"
   ]

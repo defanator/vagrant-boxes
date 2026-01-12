@@ -70,7 +70,10 @@ passwd -d root
 sync
 
 # mumbo jumbo to give vmware-vdiskmanager more room for defragmenting and shrinking vmdk disk(s)
-for destpath in /boot /home/vagrant; do
+for destpath in /boot/efi /home/vagrant; do
+    if [ ! -d "${destpath}" ]; then
+        continue
+    fi
     touch ${destpath}/zeroes
     if ! dd if=/dev/zero of=${destpath}/zeroes bs=4k; then
         sync

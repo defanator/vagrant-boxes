@@ -8,15 +8,27 @@
     "timezone": "UTC"
   },
   "storage": {
+    "boot": {
+      "configure": false
+    },
     "drives": [
       {
         "partitions": [
           {
             "filesystem": {
+              "path": "/boot/efi",
+              "type": "vfat"
+            },
+            "size": { "min": "256 MiB", "max": "256 MiB" },
+            "id": "esp"
+          },
+          {
+            "filesystem": {
               "path": "/",
               "type": "ext4"
             },
-            "size": { "min": "6 GiB" }
+            "size": { "min": "6 GiB" },
+            "id": "linux"
           }
         ]
       }
