@@ -36,7 +36,8 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 rpm -qa | grep -- "kernel-firmware" | xargs -r rpm -e
 
 # remove optional packages
-rpm -e glibc-locale
+rpm -e glibc-locale desktop-translations
+rpm -qa | grep -E -- "plymouth|libply" | xargs -r rpm -e
 # rpm -e Mesa Mesa-dri Mesa-gallium Mesa-libEGL1 Mesa-libGL1 libglvnd libgstgl-1_0-0 gstreamer-plugins-base libgtk-4-1 gcr-viewer gtk4-tools gtk4-branding-openSUSE libgsttag-1_0-0 libgstplay-1_0-0 libgstaudio-1_0-0 libgstpbutils-1_0-0 libgstriff-1_0-0 libgstplayer-1_0-0 libgstvideo-1_0-0 libgstallocators-1_0-0 libgstapp-1_0-0 libLLVM19
 # rpm -e libasound2 sound-theme-freedesktop
 # rpm -e python313-policycoreutils policycoreutils-python-utils
