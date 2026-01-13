@@ -1,6 +1,6 @@
 # Vagrant boxes
 
-This repository provides automated build tools for creating Vagrant boxes from multiple Linux distributions, including Amazon Linux, Rocky Linux, and Debian.
+This repository provides automated build tools to create Vagrant boxes for various Linux distributions.
 
 It supports building boxes from various source formats using [Packer](https://developer.hashicorp.com/packer/docs/intro), including pre-built KVM/qcow2 images as well as traditional ISOs.
 
