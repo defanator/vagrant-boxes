@@ -1,0 +1,60 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+source "vmware-iso" "buildvm" {
+  iso_url          = "%%ISO_URL%%"
+  iso_checksum     = "%%ISO_CHECKSUM%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = true
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
+  version          = 22
+  cores            = 2
+  memory           = 4096
+  disk_size        = 8000
+  disk_adapter_type = "sata"
+  network_adapter_type = "vmxnet3"
+  usb              = true
+  vmx_data = {
+    # enable USB 3
+    "usb_xhci.present" = "true"
+  }
+  http_directory   = "%%HTTP_DIRECTORY%%"
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_timeout      = "10m"
+  boot_wait        = "3s"
+  boot_command = [
+    "<wait>c<wait>",
+    "linux ($root)/boot/%%ISO_ARCH%%/loader/linux $${extra_cmdline} $${isoboot} ",
+    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-leap16/agama-profile-%%ISO_ARCH%%.json<wait><enter>",
+    "initrd ($root)/boot/%%ISO_ARCH%%/loader/initrd<enter>",
+    "boot<enter>"
+  ]
+  shutdown_command = "sudo /sbin/poweroff"
+}
+
+build {
+  sources = ["source.vmware-iso.buildvm"]
+
+  provisioner "file" {
+    source = "opensuse-leap16.bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+
+  provisioner "file" {
+    source = "cloud.cfg"
+    destination = "/tmp/cloud.cfg"
+  }
+
+  provisioner "shell" {
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
+  }
+}

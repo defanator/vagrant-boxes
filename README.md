@@ -1,6 +1,6 @@
 # Vagrant boxes
 
-This repository provides automated build tools for creating Vagrant boxes from multiple Linux distributions, including Amazon Linux, Rocky Linux, and Debian.
+This repository provides automated build tools to create Vagrant boxes for various Linux distributions.
 
 It supports building boxes from various source formats using [Packer](https://developer.hashicorp.com/packer/docs/intro), including pre-built KVM/qcow2 images as well as traditional ISOs.
 
@@ -20,6 +20,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Debian 13 "trixie"** - [debian-13](debian-13/)
 - **Ubuntu 22.04 "jammy"** - [ubuntu-2204](ubuntu-2204/)
 - **Ubuntu 24.04 "noble"** - [ubuntu-2404](ubuntu-2404/)
+- **openSUSE Leap 16** - [opensuse-leap16](opensuse-leap16/)
 
 Each image supports:
 - x86_64 (amd64) architecture

@@ -1,0 +1,58 @@
+{
+  "product": {
+    "id": "openSUSE_Leap"
+  },
+  "localization": {
+    "language": "en_US.UTF-8",
+    "keyboard": "us",
+    "timezone": "UTC"
+  },
+  "storage": {
+    "boot": {
+      "configure": false
+    },
+    "drives": [
+      {
+        "partitions": [
+          {
+            "filesystem": {
+              "path": "/boot/efi",
+              "type": "vfat"
+            },
+            "size": { "min": "256 MiB", "max": "256 MiB" },
+            "id": "esp"
+          },
+          {
+            "filesystem": {
+              "path": "/",
+              "type": "ext4"
+            },
+            "size": { "min": "6 GiB" },
+            "id": "linux"
+          }
+        ]
+      }
+    ],
+    "volumeGroups": []
+  },
+  "user": {
+    "fullName": "Vagrant",
+    "userName": "vagrant",
+    "password": "vagrant",
+    "hashedPassword": false
+  },
+  "root": {
+    "password": "vagrant",
+    "hashedPassword": false,
+    "sshPublicKey": ""
+  },
+  "scripts": {
+    "post": [
+      {
+        "name": "vagrant_sudo_ssh",
+        "chroot": true,
+        "content": "#!/bin/bash\necho 'vagrant ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/vagrant\nchmod 0440 /etc/sudoers.d/vagrant\nsystemctl enable sshd"
+      }
+    ]
+  }
+}

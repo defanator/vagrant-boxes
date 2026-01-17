@@ -86,4 +86,9 @@ Vagrant.configure("2") do |config|
     ubuntu2404.vm.box = "defanator/ubuntu-24.04"
     ubuntu2404.vm.hostname = "ubuntu2404"
   end
+
+  config.vm.define "leap16", autostart: false do |leap16|
+    leap16.vm.box = "defanator/opensuse-leap16"
+    leap16.vm.hostname = "leap16"
+  end
 end
