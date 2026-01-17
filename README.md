@@ -20,6 +20,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Debian 13 "trixie"** - [debian-13](debian-13/)
 - **Ubuntu 22.04 "jammy"** - [ubuntu-2204](ubuntu-2204/)
 - **Ubuntu 24.04 "noble"** - [ubuntu-2404](ubuntu-2404/)
+- **Ubuntu 25.10 "questing"** - [ubuntu-2510](ubuntu-2510/)
 - **openSUSE Leap 16** - [opensuse-leap16](opensuse-leap16/)
 
 Each image supports:
