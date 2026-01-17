@@ -8,9 +8,9 @@ REFS    += $(_SELF)
 SHOW_ENV_VARS += \
 	FIRMWARE \
 	GUEST_OS_TYPE \
-	AL2023_IMAGES_LATEST_URL \
-	AL2023_IMAGES_LATEST_VER_URL \
-	AL2023_VERSION \
+	AL_IMAGES_LATEST_URL \
+	AL_IMAGES_LATEST_VER_URL \
+	AL_VERSION \
 	KVM_IMG \
 	VMDK_IMG
 
@@ -37,14 +37,14 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-AL2023_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/al2023/os-images/latest/
-AL2023_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL2023_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
-AL2023_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL2023_IMAGES_LATEST_VER_URL))
-AL2023_VERSION := $(shell basename $(AL2023_IMAGES_LATEST_VER_URL_STRIPPED))
-AL2023_REV ?= 1
+AL_IMAGES_LATEST_URL := https://cdn.amazonlinux.com/al2023/os-images/latest/
+AL_IMAGES_LATEST_VER_URL := $(shell curl -fsi $(AL_IMAGES_LATEST_URL) | grep -i -- "^location" | cut -d ' ' -f 2)
+AL_IMAGES_LATEST_VER_URL_STRIPPED := $(patsubst %/,%,$(AL_IMAGES_LATEST_VER_URL))
+AL_VERSION := $(shell basename $(AL_IMAGES_LATEST_VER_URL_STRIPPED))
+AL_REV ?= 1
 
-KVM_IMG_URL := $(AL2023_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/al2023-kvm-$(AL2023_VERSION)-kernel-6.1-$(OSARCH).xfs.gpt.qcow2
-KVM_SHASUM_URL := $(AL2023_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
+KVM_IMG_URL := $(AL_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/al2023-kvm-$(AL_VERSION)-kernel-6.1-$(OSARCH).xfs.gpt.qcow2
+KVM_SHASUM_URL := $(AL_IMAGES_LATEST_VER_URL_STRIPPED)/$(KVM_PATH)/SHA256SUMS
 KVM_IMG := $(shell basename $(KVM_IMG_URL))
 VMDK_IMG := $(subst qcow2,vmdk,$(KVM_IMG))
 
@@ -76,7 +76,7 @@ $(SRC_VMDIR)/seed.iso: | $(SRC_VMDIR)
 $(SRC_VMDIR)/$(_IMAGE).vmx: $(_TOPDIR)/$(_IMAGE).vmx.in $(SRC_VMDIR)/seed.iso | $(SRC_VMDIR)
 	sed \
 		-e "s,%%VMDK_NAME%%,$(VMDK_IMG),g" \
-		-e "s,%%VERSION%%,$(AL2023_VERSION),g" \
+		-e "s,%%VERSION%%,$(AL_VERSION),g" \
 		-e "s,%%SEED_ISO_PATH%%,$(SRC_VMDIR)/seed.iso,g" \
 		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
 		-e "s,%%FIRMWARE%%,$(FIRMWARE),g" \
@@ -97,7 +97,10 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%VM_NAME%%,$(_IMAGE),g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
-dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl ## Prepare packer sources
+$(DST_VMDIR)/$(_IMAGE).bootstrap.sh: $(_TOPDIR)/$(_IMAGE).bootstrap.sh | $(DST_VMDIR)
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap.sh $@
+
+dstvm: $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(DST_VMDIR)/$(_IMAGE).bootstrap.sh ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	echo "building..." && \
@@ -105,6 +108,8 @@ $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | srcvm dstvm
 	cd $(DST_VMDIR) && \
 	packer build .
 	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
+		continue ; \
 		echo "Defragmenting $${vmdk}..." ; \
 		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
 		echo "Shrinking $${vmdk}..." ; \
@@ -133,19 +138,19 @@ boxvm: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant 
 $(DESTDIR):
 	mkdir -p $@
 
-$(DESTDIR)/$(_IMAGE)-v$(AL2023_VERSION)-$(AL2023_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+$(DESTDIR)/$(_IMAGE)-v$(AL_VERSION)-$(AL_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
 	cd $(BOX_VMDIR) && tar -czvf $@ *
 
 $(DESTDIR)/metadata.json: $(_TOPDIR)/metadata-box.json.in | $(DESTDIR)
 	sed \
 		-e "s,%%ARCH%%,$(ARCH),g" \
-		-e "s,%%VERSION%%,$(AL2023_VERSION)-$(AL2023_REV),g" \
+		-e "s,%%VERSION%%,$(AL_VERSION)-$(AL_REV),g" \
 	< $(_TOPDIR)/metadata-box.json.in > $@
 
-$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(AL2023_VERSION)-$(AL2023_REV)-$(ARCH).box
-	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(AL2023_VERSION)-$(AL2023_REV)-$(ARCH).box | tee $@
+$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(AL_VERSION)-$(AL_REV)-$(ARCH).box
+	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(AL_VERSION)-$(AL_REV)-$(ARCH).box | tee $@
 
-box: $(DESTDIR)/$(_IMAGE)-v$(AL2023_VERSION)-$(AL2023_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
+box: $(DESTDIR)/$(_IMAGE)-v$(AL_VERSION)-$(AL_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
 
 .PHONY: preclean
 preclean:
