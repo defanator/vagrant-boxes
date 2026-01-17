@@ -27,6 +27,11 @@ build {
     destination = "/tmp/bootstrap.sh"
   }
 
+  provisioner "file" {
+    source = "cloud.cfg"
+    destination = "/tmp/cloud.cfg"
+  }
+
   provisioner "shell" {
     inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
   }
