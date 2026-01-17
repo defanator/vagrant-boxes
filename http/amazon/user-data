@@ -13,3 +13,4 @@ write_files:
       runcmd:
         - sed -i "s/^PasswordAuthentication.*/PasswordAuthentication yes/" /etc/ssh/sshd_config
         - systemctl restart sshd
+        - rm -f /etc/update-motd.d/70-available-updates
