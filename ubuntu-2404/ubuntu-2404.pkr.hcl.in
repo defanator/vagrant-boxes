@@ -29,7 +29,7 @@ source "vmware-iso" "buildvm" {
   network_adapter_type = "vmxnet3"
   usb              = true
   vmx_data = {
-    # enable USB 3 - Debian 13 on arm64 could lose keyboard after grub with USB 2.0 for some reason
+    # enable USB 3
     "usb_xhci.present" = "true"
   }
   http_directory   = "%%HTTP_DIRECTORY%%"
