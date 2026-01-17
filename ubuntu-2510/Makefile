@@ -31,12 +31,12 @@ ifeq ($(OSARCH),x86_64)
 GUEST_OS_TYPE := ubuntu-64
 FIRMWARE ?= bios
 ISO_ARCH := amd64
-UBUNTU_IMAGES_URL := https://releases.ubuntu.com/noble
+UBUNTU_IMAGES_URL := https://releases.ubuntu.com/questing
 else ifeq ($(OSARCH),arm64)
 GUEST_OS_TYPE := arm-ubuntu-64
 FIRMWARE ?= efi
 ISO_ARCH := $(OSARCH)
-UBUNTU_IMAGES_URL := https://cdimage.ubuntu.com/releases/24.04/release
+UBUNTU_IMAGES_URL := https://cdimage.ubuntu.com/releases/25.10/release
 else
 $(error unknown OSARCH: $(OSARCH))
 endif
@@ -45,7 +45,7 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-UBUNTU_VERSION := 24.04.3
+UBUNTU_VERSION := 25.10
 UBUNTU_REV ?= $(shell date +"%Y%m%d").1
 
 
@@ -68,7 +68,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 	curl -fLO --progress-bar $(ISO_IMG_URL) && \
 	sha256sum -c $(ISO_SHASUM)
 
-fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Ubuntu 24.04 "noble" ISO image
+fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Ubuntu 25.10 "questing" ISO image
 
 srcvm:
 	$(error this builder does not require srcvm)

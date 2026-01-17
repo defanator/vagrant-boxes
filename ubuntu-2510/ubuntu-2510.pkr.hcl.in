@@ -45,7 +45,7 @@ build {
   sources = ["source.vmware-iso.buildvm"]
 
   provisioner "file" {
-    source = "ubuntu-2404.bootstrap.sh"
+    source = "ubuntu-2510.bootstrap.sh"
     destination = "/tmp/bootstrap.sh"
   }
 
