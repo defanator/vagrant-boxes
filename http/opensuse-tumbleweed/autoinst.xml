@@ -45,21 +45,6 @@
         <partition>
           <create config:type="boolean">true</create>
           <crypt_fs config:type="boolean">false</crypt_fs>
-          <filesystem config:type="symbol">swap</filesystem>
-          <format config:type="boolean">true</format>
-          <fstopt>defaults</fstopt>
-          <loop_fs config:type="boolean">false</loop_fs>
-          <mount>swap</mount>
-          <mountby config:type="symbol">device</mountby>
-          <partition_id config:type="integer">130</partition_id>
-          <partition_nr config:type="integer">1</partition_nr>
-          <raid_options />
-          <resize config:type="boolean">false</resize>
-          <size>512M</size>
-        </partition>
-        <partition>
-          <create config:type="boolean">true</create>
-          <crypt_fs config:type="boolean">false</crypt_fs>
           <filesystem config:type="symbol">btrfs</filesystem>
           <format config:type="boolean">true</format>
           <loop_fs config:type="boolean">false</loop_fs>
@@ -108,7 +93,7 @@
     <dns>
       <dhcp_hostname config:type="boolean">false</dhcp_hostname>
       <domain>localdomain</domain>
-      <hostname>opensuse15.localdomain</hostname>
+      <hostname>tumbleweed.localdomain</hostname>
     </dns>
     <interfaces config:type="list">
       <interface>

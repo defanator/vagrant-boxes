@@ -30,7 +30,7 @@ source "vmware-iso" "buildvm" {
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
-  boot_wait        = "3s"
+  boot_wait        = "10s"
 #  boot_command = [
 #    "<wait>c<wait>",
 #    "linux ($root)/boot/%%ISO_ARCH%%/loader/linux $${extra_cmdline} $${isoboot} ",
