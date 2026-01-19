@@ -73,7 +73,7 @@ $(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
 	curl -fLO --progress-bar $(ISO_IMG_URL) && \
 	sha256sum -c $(ISO_SHASUM)
 
-fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch openSUSE Leap 16 ISO image
+fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch openSUSE Tumbleweed ISO image
 
 srcvm:
 	$(error this builder does not require srcvm)
