@@ -96,4 +96,9 @@ Vagrant.configure("2") do |config|
     leap16.vm.box = "defanator/opensuse-leap16"
     leap16.vm.hostname = "leap16"
   end
+
+  config.vm.define "tw", autostart: false do |tw|
+    tw.vm.box = "defanator/opensuse-tumbleweed"
+    tw.vm.hostname = "tw"
+  end
 end
