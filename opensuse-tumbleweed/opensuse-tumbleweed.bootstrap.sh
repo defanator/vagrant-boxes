@@ -11,7 +11,7 @@ zypper --non-interactive removerepo 1
 
 case "$(uname -m)" in
   x86_64)
-    ypper --non-interactive addrepo https://download.opensuse.org/tumbleweed/repo/oss repo-oss
+    zypper --non-interactive addrepo https://download.opensuse.org/tumbleweed/repo/oss repo-oss
     zypper --non-interactive addrepo https://download.opensuse.org/repositories/network:dhcp/openSUSE_Tumbleweed/network:dhcp.repo
     ;;
   aarch64)
