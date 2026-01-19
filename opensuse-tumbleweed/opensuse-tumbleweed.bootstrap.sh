@@ -7,9 +7,22 @@ umask 022
 rpm -qa | grep -- "kernel-default" | sort >/tmp/kernel_before_update
 
 # remove DVD repository and add required online ones
-zypper --non-interactive removerepo openSUSE-20260113-0
-zypper --non-interactive addrepo https://download.opensuse.org/tumbleweed/repo/oss repo-oss
-zypper --non-interactive addrepo https://download.opensuse.org/repositories/network:dhcp/openSUSE_Tumbleweed/network:dhcp.repo
+zypper --non-interactive removerepo 1
+
+case "$(uname -m)" in
+  x86_64)
+    ypper --non-interactive addrepo https://download.opensuse.org/tumbleweed/repo/oss repo-oss
+    zypper --non-interactive addrepo https://download.opensuse.org/repositories/network:dhcp/openSUSE_Tumbleweed/network:dhcp.repo
+    ;;
+  aarch64)
+    zypper --non-interactive addrepo https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/ repo-oss
+    zypper --non-interactive addrepo https://download.opensuse.org/repositories/network:dhcp/openSUSE_Factory_ARM/network:dhcp.repo
+    ;;
+  *)
+    echo "unknown arch" >&2
+    exit 1
+esac
+
 zypper --non-interactive addrepo https://download.opensuse.org/repositories/devel:/languages:/python/openSUSE_Tumbleweed/devel:languages:python.repo
 zypper --non-interactive addrepo https://download.opensuse.org/repositories/Cloud:/Tools/openSUSE_Tumbleweed/Cloud:Tools.repo
 zypper --non-interactive --gpg-auto-import-keys refresh

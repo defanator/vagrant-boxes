@@ -8,6 +8,12 @@ packer {
   }
 }
 
+variable "boot_command" {
+  type        = list(string)
+  default     = null
+  description = "Keystrokes to initiate automated install"
+}
+
 source "vmware-iso" "buildvm" {
   iso_url          = "%%ISO_URL%%"
   iso_checksum     = "%%ISO_CHECKSUM%%"
@@ -31,21 +37,7 @@ source "vmware-iso" "buildvm" {
   ssh_password     = "vagrant"
   ssh_timeout      = "10m"
   boot_wait        = "10s"
-#  boot_command = [
-#    "<wait>c<wait>",
-#    "linux ($root)/boot/%%ISO_ARCH%%/loader/linux $${extra_cmdline} $${isoboot} ",
-#    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-tumbleweed/agama-profile-%%ISO_ARCH%%.json<wait><enter>",
-#    "initrd ($root)/boot/%%ISO_ARCH%%/loader/initrd<enter>",
-#    "boot<enter>"
-#  ]
-#  boot_command = [
-#    "<wait><down><wait>",
-#    "inst.auto=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-tumbleweed/agama-profile-%%ISO_ARCH%%.json<wait><enter>",
-#  ]
-  boot_command = [
-    "<wait><down><wait>",
-    "autoyast=http://{{ .HTTPIP }}:{{ .HTTPPort }}/opensuse-tumbleweed/autoinst.xml<wait><enter>",
-  ]
+  boot_command     = var.boot_command
   shutdown_command = "sudo /sbin/poweroff"
 }
 
