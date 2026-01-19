@@ -22,8 +22,9 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Ubuntu 24.04 "noble"** - [ubuntu-2404](ubuntu-2404/)
 - **Ubuntu 25.10 "questing"** - [ubuntu-2510](ubuntu-2510/)
 - **openSUSE Leap 16** - [opensuse-leap16](opensuse-leap16/)
+- **openSUSE Tumbleweed** - [opensuse-tumbleweed](opensuse-tumbleweed/)
 
-Each image supports:
+Most images support:
 - x86_64 (amd64) architecture
 - aarch64 (arm64) architecture with EFI firmware
 

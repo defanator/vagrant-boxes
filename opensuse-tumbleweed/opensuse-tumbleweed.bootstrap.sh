@@ -14,9 +14,9 @@ zypper --non-interactive addrepo https://download.opensuse.org/repositories/deve
 zypper --non-interactive addrepo https://download.opensuse.org/repositories/Cloud:/Tools/openSUSE_Tumbleweed/Cloud:Tools.repo
 zypper --non-interactive --gpg-auto-import-keys refresh
 
-# update packages and install a few extra ones
+# update packages and install cloud-init and a few extra ones
 zypper --non-interactive update --no-recommends
-zypper --non-interactive install --no-recommends cloud-init open-vm-tools vim openssl
+zypper --non-interactive install --no-recommends cloud-init open-vm-tools gvfs-fuse vim openssl
 
 # check if new kernel has been installed and remove old one in that case
 rpm -qa | grep -- "kernel-default" | sort >/tmp/kernel_after_update
