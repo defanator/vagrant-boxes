@@ -47,8 +47,6 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-# https://download.opensuse.org/ports/aarch64/factory/iso/openSUSE-Tumbleweed-DVD-aarch64-Snapshot20260112-Media.iso
-
 TUMBLEWEED_REV ?= 1
 
 BOX_VERSION := $(subst Snapshot,,$(TUMBLEWEED_VERSION)).$(TUMBLEWEED_REV)
