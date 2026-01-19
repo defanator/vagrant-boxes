@@ -49,7 +49,10 @@ DESTDIR ?= $(_WORKDIR)/output
 
 TUMBLEWEED_REV ?= 1
 
-BOX_VERSION := $(subst Snapshot,,$(TUMBLEWEED_VERSION)).$(TUMBLEWEED_REV)
+# BOX_VERSION := $(subst Snapshot,,$(TUMBLEWEED_VERSION)).$(TUMBLEWEED_REV)
+#
+# snapshots for different archs can be captured on different dates so we will just use current date as box version
+BOX_VERSION := $(shell date +"%Y%m%d").1
 
 ISO_IMG_URL := $(TUMBLEWEED_IMAGES_URL)/openSUSE-Tumbleweed-DVD-$(ISO_ARCH)-$(TUMBLEWEED_VERSION)-Media.iso
 ISO_SHASUM_URL := $(ISO_IMG_URL).sha256
