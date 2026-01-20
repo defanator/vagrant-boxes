@@ -1,0 +1,51 @@
+packer {
+  required_version = ">= 1.14.0"
+  required_plugins {
+    vmware = {
+      source  = "github.com/hashicorp/vmware"
+      version = "~> 1"
+    }
+  }
+}
+
+source "vmware-iso" "buildvm" {
+  iso_url          = "%%ISO_URL%%"
+  iso_checksum     = "%%ISO_CHECKSUM%%"
+  vm_name          = "%%VM_NAME%%"
+  headless         = true
+  guest_os_type    = "%%GUEST_OS_TYPE%%"
+  version          = 22
+  cores            = 2
+  memory           = 4096
+  disk_size        = 8000
+  disk_adapter_type = "sata"
+  network_adapter_type = "vmxnet3"
+  usb              = true
+  http_directory   = "%%HTTP_DIRECTORY%%"
+  communicator     = "ssh"
+  ssh_username     = "vagrant"
+  ssh_private_key_file = "ssh.key"
+  ssh_timeout      = "10m"
+  boot_command     = [
+    "root<enter><wait>",
+    "ip link set eth0 up<enter>",
+    "udhcpc -i eth0<enter><wait5>",
+    "export HTTP_SRV={{ .HTTPIP }}:{{ .HTTPPort }}<enter><wait>",
+    "wget -O /tmp/bootstrap.sh http://$${HTTP_SRV}/alpine/bootstrap1.sh<enter><wait>",
+    "/bin/sh /tmp/bootstrap.sh<enter>",
+    "<wait15>",
+  ]
+}
+
+build {
+  sources = ["source.vmware-iso.buildvm"]
+
+  provisioner "file" {
+    source = "alpine-3.bootstrap2.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+
+  provisioner "shell" {
+    inline = ["chmod +x /tmp/bootstrap.sh && doas /tmp/bootstrap.sh"]
+  }
+}

@@ -101,4 +101,10 @@ Vagrant.configure("2") do |config|
     tw.vm.box = "defanator/opensuse-tumbleweed"
     tw.vm.hostname = "tw"
   end
+
+  config.vm.define "alpine3", autostart: false do |alpine3|
+    alpine3.vm.box = "defanator/alpine-3"
+    alpine3.vm.hostname = "alpine3"
+    alpine3.ssh.shell = "/bin/sh"
+  end
 end
