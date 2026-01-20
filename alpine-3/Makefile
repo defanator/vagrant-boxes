@@ -91,8 +91,8 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
 	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
 
-$(TOPDIR)/http/alpine/bootstrap1.sh: $(_IMAGE).bootstrap1.sh
-	cp $(_IMAGE).bootstrap1.sh $@
+$(TOPDIR)/http/alpine/bootstrap1.sh: $(_TOPDIR)/$(_IMAGE).bootstrap1.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap1.sh $@
 
 $(DST_VMDIR)/ssh.key:
 	ssh-keygen -t ed25519 -C packer -f $@ -N ""
@@ -100,8 +100,8 @@ $(DST_VMDIR)/ssh.key:
 $(TOPDIR)/http/alpine/ssh.key.pub: $(DST_VMDIR)/ssh.key
 	cp $(DST_VMDIR)/ssh.key.pub $@
 
-$(DST_VMDIR)/$(_IMAGE).bootstrap2.sh: $(_IMAGE).bootstrap2.sh
-	cp $(_IMAGE).bootstrap2.sh $@
+$(DST_VMDIR)/$(_IMAGE).bootstrap2.sh: $(_TOPDIR)/$(_IMAGE).bootstrap2.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap2.sh $@
 
 dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(TOPDIR)/http/alpine/bootstrap1.sh $(DST_VMDIR)/ssh.key $(TOPDIR)/http/alpine/ssh.key.pub $(DST_VMDIR)/$(_IMAGE).bootstrap2.sh ## Prepare packer sources
 
