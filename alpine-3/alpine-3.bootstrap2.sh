@@ -12,7 +12,8 @@ apk update
 apk upgrade
 
 # install additional packages
-apk add sudo curl open-vm-tools
+apk add sudo curl open-vm-tools open-vm-tools-hgfs
+rc-update add open-vm-tools boot
 
 # configure sudo (in addition to doas) for vagrant user
 printf "vagrant ALL=(ALL:ALL) NOPASSWD: ALL\n" >/etc/sudoers.d/vagrant
