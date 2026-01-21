@@ -31,7 +31,8 @@ GUEST_OS_TYPE := otherlinux-64
 FIRMWARE ?= bios
 ISO_ARCH := $(OSARCH)
 else ifeq ($(OSARCH),arm64)
-GUEST_OS_TYPE := arm-otherlinux-64
+# https://gitlab.alpinelinux.org/alpine/aports/-/issues/14407
+GUEST_OS_TYPE := arm-other6xlinux-64
 FIRMWARE ?= efi
 ISO_ARCH := aarch64
 else
