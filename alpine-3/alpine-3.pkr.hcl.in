@@ -33,7 +33,7 @@ source "vmware-iso" "buildvm" {
     "export HTTP_SRV={{ .HTTPIP }}:{{ .HTTPPort }}<enter><wait>",
     "wget -O /tmp/bootstrap.sh http://$${HTTP_SRV}/alpine/bootstrap1.sh<enter><wait>",
     "/bin/sh /tmp/bootstrap.sh<enter>",
-    "<wait15>",
+    "<wait30>",
   ]
 }
 
