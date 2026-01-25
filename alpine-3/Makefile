@@ -11,6 +11,7 @@ SHOW_ENV_VARS += \
 	ALPINE_VERSION \
 	ALPINE_REV \
 	ALPINE_IMAGES_URL \
+	ISO_ARCH \
 	ISO_IMG_URL \
 	ISO_SHASUM_URL \
 	ISO_IMG \
@@ -81,7 +82,7 @@ srcvm:
 $(DST_VMDIR):
 	mkdir -p $(DST_VMDIR)
 
-$(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
+$(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).$(ISO_ARCH).pkr.hcl.in | $(DST_VMDIR)
 	sed \
 		-e "s,%%OSARCH%%,$(OSARCH),g" \
 		-e "s,%%ISO_ARCH%%,$(ISO_ARCH),g" \
@@ -90,10 +91,13 @@ $(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).pkr.hcl.in | $(DST_VMDIR)
 		-e "s,%%ISO_CHECKSUM%%,file:$(ISO_SHASUM_LOCAL_URL),g" \
 		-e "s,%%VM_NAME%%,$(_IMAGE),g" \
 		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
-	< $(_TOPDIR)/$(_IMAGE).pkr.hcl.in > $@
+	< $(_TOPDIR)/$(_IMAGE).$(ISO_ARCH).pkr.hcl.in > $@
 
 $(TOPDIR)/http/alpine/bootstrap1.sh: $(_TOPDIR)/$(_IMAGE).bootstrap1.sh
 	cp $(_TOPDIR)/$(_IMAGE).bootstrap1.sh $@
+
+$(TOPDIR)/http/alpine/bootstrap2.sh: $(_TOPDIR)/$(_IMAGE).bootstrap2.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap2.sh $@
 
 $(DST_VMDIR)/ssh.key:
 	ssh-keygen -t ed25519 -C packer -f $@ -N ""
@@ -104,7 +108,10 @@ $(TOPDIR)/http/alpine/ssh.key.pub: $(DST_VMDIR)/ssh.key
 $(DST_VMDIR)/$(_IMAGE).bootstrap2.sh: $(_TOPDIR)/$(_IMAGE).bootstrap2.sh
 	cp $(_TOPDIR)/$(_IMAGE).bootstrap2.sh $@
 
-dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(TOPDIR)/http/alpine/bootstrap1.sh $(DST_VMDIR)/ssh.key $(TOPDIR)/http/alpine/ssh.key.pub $(DST_VMDIR)/$(_IMAGE).bootstrap2.sh ## Prepare packer sources
+$(DST_VMDIR)/$(_IMAGE).serial-bootstrap.sh: $(_TOPDIR)/$(_IMAGE).serial-bootstrap.sh
+	cp $(_TOPDIR)/$(_IMAGE).serial-bootstrap.sh $@
+
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(TOPDIR)/http/alpine/bootstrap1.sh $(TOPDIR)/http/alpine/bootstrap2.sh $(DST_VMDIR)/ssh.key $(TOPDIR)/http/alpine/ssh.key.pub $(DST_VMDIR)/$(_IMAGE).bootstrap2.sh $(DST_VMDIR)/$(_IMAGE).serial-bootstrap.sh ## Prepare packer sources
 
 $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
 	echo "building..." && \
@@ -160,4 +167,5 @@ box: $(DESTDIR)/$(_IMAGE)-v$(ALPINE_VERSION)-$(ALPINE_REV)-$(ARCH).box $(DESTDIR
 preclean:
 	rm -rf $(DST_VMDIR) $(DESTDIR) $(BOX_VMDIR)
 	rm -f $(TOPDIR)/http/alpine/bootstrap1.sh
+	rm -f $(TOPDIR)/http/alpine/bootstrap2.sh
 	rm -f $(TOPDIR)/http/alpine/ssh.key.pub

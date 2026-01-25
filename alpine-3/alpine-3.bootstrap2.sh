@@ -24,6 +24,9 @@ wget -O - https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.
 # remove cache
 rm -rf /var/cache/apk/*
 
+# clean up logs
+find /var/log/ -type f -print -delete
+
 # synchronize cached writes to persistent storage
 sync
 
