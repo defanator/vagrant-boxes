@@ -23,6 +23,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Ubuntu 25.10 "questing"** - [ubuntu-2510](ubuntu-2510/)
 - **openSUSE Leap 16** - [opensuse-leap16](opensuse-leap16/)
 - **openSUSE Tumbleweed** - [opensuse-tumbleweed](opensuse-tumbleweed/)
+- **Alpine Linux 3.x** - [alpine-3](alpine-3/)
 
 Most images support:
 - x86_64 (amd64) architecture
