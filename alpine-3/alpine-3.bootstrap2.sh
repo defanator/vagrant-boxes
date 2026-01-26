@@ -37,11 +37,17 @@ echo -n "vagrant:vagrant" | chpasswd
 sync
 
 # mumbo jumbo to give vmware-vdiskmanager more room for defragmenting and shrinking vmdk disk(s)
-if ! dd if=/dev/zero of=/home/vagrant/zeroes bs=4k; then
-    sync
-    rm -f /home/vagrant/zeroes
-    sync
-fi
+for destpath in /boot/efi /home/vagrant; do
+    if [ ! -d "${destpath}" ]; then
+        continue
+    fi
+    touch ${destpath}/zeroes
+    if ! dd if=/dev/zero of=${destpath}/zeroes bs=4k; then
+        sync
+        rm -f ${destpath}/zeroes
+        sync
+    fi
+done
 
 # emit disk usage so it would be in packer log for future references
 df -h
