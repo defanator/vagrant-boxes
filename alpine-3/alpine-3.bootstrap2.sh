@@ -27,6 +27,9 @@ rm -rf /var/cache/apk/*
 # clean up logs
 find /var/log/ -type f -print -delete
 
+# lock root account to prevent local login without password
+passwd -l root
+
 # synchronize cached writes to persistent storage
 sync
 
