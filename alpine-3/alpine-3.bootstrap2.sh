@@ -30,6 +30,9 @@ find /var/log/ -type f -print -delete
 # lock root account to prevent local login without password
 passwd -l root
 
+# change password for user vagrant
+echo -n "vagrant:vagrant" | chpasswd
+
 # synchronize cached writes to persistent storage
 sync
 
