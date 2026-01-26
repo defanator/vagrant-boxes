@@ -45,6 +45,7 @@ source "vmware-iso" "buildvm" {
   boot_command     = [
     "<wait10>",
   ]
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {

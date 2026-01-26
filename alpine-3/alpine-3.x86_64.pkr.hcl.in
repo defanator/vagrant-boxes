@@ -35,6 +35,7 @@ source "vmware-iso" "buildvm" {
     "/bin/sh /tmp/bootstrap.sh<enter>",
     "<wait30>",
   ]
+  shutdown_command = "sudo /sbin/poweroff"
 }
 
 build {
