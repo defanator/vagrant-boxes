@@ -12,7 +12,14 @@ export USERSSHKEY="http://${HTTP_SRV}/alpine/ssh.key.pub"
 
 setup-alpine -ef /tmp/answers
 
-# TODO: figure out better way to prevent accidental ssh logins during this phase
+# TODO: Replace this ad‑hoc shutdown of sshd with a more robust mechanism that ensures
+#       the system is never reachable via SSH while it is only partially configured.
+#       Currently, sshd may briefly accept logins using a generic/temporary key between
+#       setup-alpine invocation and this stop call, creating a race window when e.g.
+#       packer SSH communicator session could be established.
+#       Investigate image‑level hardening (e.g. disabling sshd by default, binding to
+#       localhost only, or using firewall rules/metadata‑driven controls) so that SSH
+#       access is only enabled after 1st phase bootstrap has completed successfully.
 rc-service sshd stop
 
 mount /dev/sda2 /mnt
