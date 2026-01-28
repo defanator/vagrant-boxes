@@ -1,0 +1,171 @@
+#!/usr/bin/env make -f
+
+_TOPDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+_SELF   := $(abspath $(lastword $(MAKEFILE_LIST)))
+_IMAGE  := $(shell basename $(_TOPDIR))
+REFS    += $(_SELF)
+
+SHOW_ENV_VARS += \
+	FIRMWARE \
+	GUEST_OS_TYPE \
+	ALPINE_VERSION \
+	ALPINE_REV \
+	ALPINE_IMAGES_URL \
+	ISO_ARCH \
+	ISO_IMG_URL \
+	ISO_SHASUM_URL \
+	ISO_IMG \
+	ISO_SHASUM \
+	ISO_IMG_LOCAL_URL \
+	ISO_SHASUM_LOCAL_URL
+
+include $(_TOPDIR)/../Makefile
+
+OS      ?= $(error OS not defined)
+OSARCH  ?= $(error OSARCH not defined)
+WORKDIR ?= $(error WORKDIR not defined)
+
+_WORKDIR := $(WORKDIR)/$(_IMAGE)
+
+ifeq ($(OSARCH),x86_64)
+GUEST_OS_TYPE := otherlinux-64
+FIRMWARE ?= bios
+ISO_ARCH := $(OSARCH)
+else ifeq ($(OSARCH),arm64)
+# https://gitlab.alpinelinux.org/alpine/aports/-/issues/14407
+GUEST_OS_TYPE := arm-other6xlinux-64
+FIRMWARE ?= efi
+ISO_ARCH := aarch64
+else
+$(error unknown OSARCH: $(OSARCH))
+endif
+
+DST_VMDIR ?= $(_WORKDIR)/packer-dst
+BOX_VMDIR ?= $(_WORKDIR)/box
+DESTDIR ?= $(_WORKDIR)/output
+
+# https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/aarch64/alpine-standard-3.23.2-aarch64.iso
+# https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/x86_64/alpine-standard-3.23.2-x86_64.iso
+
+ALPINE_VERSION_MAJ := 3
+ALPINE_VERSION_MIN := 23
+ALPINE_VERSION_PATCH := 2
+ALPINE_VERSION := $(ALPINE_VERSION_MAJ).$(ALPINE_VERSION_MIN).$(ALPINE_VERSION_PATCH)
+
+ALPINE_IMAGES_URL := https://dl-cdn.alpinelinux.org/alpine/v$(ALPINE_VERSION_MAJ).$(ALPINE_VERSION_MIN)/releases/$(ISO_ARCH)
+ALPINE_REV ?= $(shell date +"%Y%m%d").1
+
+ISO_IMG_URL := $(ALPINE_IMAGES_URL)/alpine-standard-$(ALPINE_VERSION)-$(ISO_ARCH).iso
+ISO_SHASUM_URL := $(ISO_IMG_URL).sha256
+
+ISO_IMG := $(shell basename $(ISO_IMG_URL))
+ISO_SHASUM := $(shell basename $(ISO_SHASUM_URL))
+ISO_IMG_LOCAL_URL := file://$(_WORKDIR)/$(ISO_IMG)
+ISO_SHASUM_LOCAL_URL := file://$(_WORKDIR)/$(ISO_SHASUM)
+
+VMWARE_DISKMANAGER ?= /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager
+
+$(_WORKDIR):
+	mkdir -p "$@"
+
+$(_WORKDIR)/$(ISO_IMG): | $(_WORKDIR)
+	cd $(_WORKDIR) && \
+	curl -fLO --progress-bar $(ISO_SHASUM_URL) && \
+	curl -fLO --progress-bar $(ISO_IMG_URL) && \
+	sha256sum -c $(ISO_SHASUM)
+
+fetch: $(_WORKDIR)/$(ISO_IMG) ## Fetch Alpine Linux ISO image
+
+srcvm:
+	$(error this builder does not require srcvm)
+
+$(DST_VMDIR):
+	mkdir -p $(DST_VMDIR)
+
+$(DST_VMDIR)/$(_IMAGE).pkr.hcl: $(_TOPDIR)/$(_IMAGE).$(ISO_ARCH).pkr.hcl.in | $(DST_VMDIR)
+	sed \
+		-e "s,%%OSARCH%%,$(OSARCH),g" \
+		-e "s,%%ISO_ARCH%%,$(ISO_ARCH),g" \
+		-e "s,%%GUEST_OS_TYPE%%,$(GUEST_OS_TYPE),g" \
+		-e "s,%%ISO_URL%%,$(ISO_IMG_LOCAL_URL),g" \
+		-e "s,%%ISO_CHECKSUM%%,file:$(ISO_SHASUM_LOCAL_URL),g" \
+		-e "s,%%VM_NAME%%,$(_IMAGE),g" \
+		-e "s,%%HTTP_DIRECTORY%%,$(TOPDIR)/http,g" \
+	< $(_TOPDIR)/$(_IMAGE).$(ISO_ARCH).pkr.hcl.in > $@
+
+$(TOPDIR)/http/alpine/bootstrap1.sh: $(_TOPDIR)/$(_IMAGE).bootstrap1.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap1.sh $@
+
+$(TOPDIR)/http/alpine/bootstrap2.sh: $(_TOPDIR)/$(_IMAGE).bootstrap2.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap2.sh $@
+
+$(DST_VMDIR)/ssh.key:
+	ssh-keygen -t ed25519 -C packer -f $@ -N ""
+
+$(TOPDIR)/http/alpine/ssh.key.pub: $(DST_VMDIR)/ssh.key
+	cp $(DST_VMDIR)/ssh.key.pub $@
+
+$(DST_VMDIR)/$(_IMAGE).bootstrap2.sh: $(_TOPDIR)/$(_IMAGE).bootstrap2.sh
+	cp $(_TOPDIR)/$(_IMAGE).bootstrap2.sh $@
+
+$(DST_VMDIR)/$(_IMAGE).serial-bootstrap.sh: $(_TOPDIR)/$(_IMAGE).serial-bootstrap.sh
+	cp $(_TOPDIR)/$(_IMAGE).serial-bootstrap.sh $@
+
+dstvm: $(_WORKDIR)/$(ISO_IMG) $(DST_VMDIR)/$(_IMAGE).pkr.hcl $(TOPDIR)/http/alpine/bootstrap1.sh $(TOPDIR)/http/alpine/bootstrap2.sh $(DST_VMDIR)/ssh.key $(TOPDIR)/http/alpine/ssh.key.pub $(DST_VMDIR)/$(_IMAGE).bootstrap2.sh $(DST_VMDIR)/$(_IMAGE).serial-bootstrap.sh ## Prepare packer sources
+
+$(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx: | dstvm
+	echo "building..." && \
+	export PACKER_LOG=1 && \
+	cd $(DST_VMDIR) && \
+	packer build $(PACKER_ARGS) .
+	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "$$(grep -- vmdk $@ | cut -d '"' -f 2)"); do \
+		echo "Skipping defragmentation and shrinking for $${vmdk} as it should have been done in packer" ; \
+		continue ; \
+		echo "Defragmenting $${vmdk}..." ; \
+		$(VMWARE_DISKMANAGER) -d $${vmdk} ; \
+		echo "Shrinking $${vmdk}..." ; \
+		$(VMWARE_DISKMANAGER) -k $${vmdk} ; \
+	done
+
+build: $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx ## Run packer build
+
+$(BOX_VMDIR):
+	mkdir -p $(BOX_VMDIR)
+
+$(BOX_VMDIR)/$(_IMAGE).vmx: | $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx $(BOX_VMDIR)
+	for vmdk in $$(find $(DST_VMDIR)/output-buildvm/ -type f -name "*.vmdk"); do \
+		vmdk_bn=$$(basename $${vmdk}) ; \
+		cd $(BOX_VMDIR) && ln ../packer-dst/output-buildvm/$${vmdk_bn} $${vmdk_bn} ; \
+	done
+	cat $(DST_VMDIR)/output-buildvm/$(_IMAGE).vmx | egrep -v -- \
+		"^displayname|^ethernet0.pcislotnumber|^extendedconfigfile|^nvme0.subnqnuuid|^nvram|^numa|^sata0:1|^serial0|^remotedisplay.vnc|^uuid.bios|^uuid.location|^vc.uuid|^vmci0.id|^vmotion|^vmxstats.filename" \
+	> $@
+
+$(BOX_VMDIR)/metadata.json: $(_TOPDIR)/metadata.json.in | $(BOX_VMDIR)
+	sed -e "s,%%ARCH%%,$(ARCH),g" < $(_TOPDIR)/metadata.json.in > $@
+
+boxvm: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json ## Prepare vagrant box VM
+
+$(DESTDIR):
+	mkdir -p $@
+
+$(DESTDIR)/$(_IMAGE)-v$(ALPINE_VERSION)-$(ALPINE_REV)-$(ARCH).box: $(BOX_VMDIR)/$(_IMAGE).vmx $(BOX_VMDIR)/metadata.json | $(DESTDIR)
+	cd $(BOX_VMDIR) && tar -czvf $@ *
+
+$(DESTDIR)/metadata.json: $(_TOPDIR)/metadata-box.json.in | $(DESTDIR)
+	sed \
+		-e "s,%%ARCH%%,$(ARCH),g" \
+		-e "s,%%VERSION%%,$(ALPINE_VERSION)-$(ALPINE_REV),g" \
+	< $(_TOPDIR)/metadata-box.json.in > $@
+
+$(DESTDIR)/SHA256SUMS: $(DESTDIR)/$(_IMAGE)-v$(ALPINE_VERSION)-$(ALPINE_REV)-$(ARCH).box
+	cd $(DESTDIR) && sha256sum $(_IMAGE)-v$(ALPINE_VERSION)-$(ALPINE_REV)-$(ARCH).box | tee $@
+
+box: $(DESTDIR)/$(_IMAGE)-v$(ALPINE_VERSION)-$(ALPINE_REV)-$(ARCH).box $(DESTDIR)/metadata.json $(DESTDIR)/SHA256SUMS ## Create vagrant box
+
+.PHONY: preclean
+preclean:
+	rm -rf $(DST_VMDIR) $(DESTDIR) $(BOX_VMDIR)
+	rm -f $(TOPDIR)/http/alpine/bootstrap1.sh
+	rm -f $(TOPDIR)/http/alpine/bootstrap2.sh
+	rm -f $(TOPDIR)/http/alpine/ssh.key.pub

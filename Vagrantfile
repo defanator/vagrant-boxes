@@ -101,4 +101,18 @@ Vagrant.configure("2") do |config|
     tw.vm.box = "defanator/opensuse-tumbleweed"
     tw.vm.hostname = "tw"
   end
+
+  config.vm.define "alpine3", autostart: false do |alpine3|
+    alpine3.vm.box = "defanator/alpine-3"
+    alpine3.vm.hostname = "alpine3"
+    alpine3.ssh.shell = "/bin/sh"
+
+    # uncomment the following block to enable serial console on port 11777
+    #alpine3.vm.provider "vmware_desktop" do |alvmw, override|
+    #  alvmw.vmx["serial0.present"] = "true"
+    #  alvmw.vmx["serial0.yieldOnMsrRead"] = "true"
+    #  alvmw.vmx["serial0.fileType"] = "network"
+    #  alvmw.vmx["serial0.fileName"] = "telnet://:11777"
+    #end
+  end
 end
