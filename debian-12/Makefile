@@ -42,7 +42,7 @@ DST_VMDIR ?= $(_WORKDIR)/packer-dst
 BOX_VMDIR ?= $(_WORKDIR)/box
 DESTDIR ?= $(_WORKDIR)/output
 
-DEBIAN12_VERSION := 12.12.0
+DEBIAN12_VERSION := 12.13.0
 DEBIAN12_REV ?= $(shell date +"%Y%m%d").1
 
 DEBIAN12_IMAGES_URL := https://cdimage.debian.org/cdimage/archive/$(DEBIAN12_VERSION)/$(ISO_ARCH)/iso-cd
