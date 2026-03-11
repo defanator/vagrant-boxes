@@ -12,7 +12,7 @@ systemctl stop systemd-journald
 
 # install cloud-init and open-vm-tools
 apt-get update -y
-apt-get install --no-install-recommends --no-install-suggests -y cloud-init open-vm-tools
+apt-get install --no-install-recommends --no-install-suggests -y cloud-init open-vm-tools cloud-guest-utils
 
 # initiate cloud-init for next fresh boot
 cloud-init clean --logs --seed
