@@ -21,6 +21,7 @@ Pre-built boxes are available from Vagrant Cloud: [https://portal.cloud.hashicor
 - **Ubuntu 22.04 "jammy"** - [ubuntu-2204](ubuntu-2204/)
 - **Ubuntu 24.04 "noble"** - [ubuntu-2404](ubuntu-2404/)
 - **Ubuntu 25.10 "questing"** - [ubuntu-2510](ubuntu-2510/)
+- **Ubuntu 26.04 "resolute"** - [ubuntu-2604](ubuntu-2604/)
 - **openSUSE Leap 16** - [opensuse-leap16](opensuse-leap16/)
 - **openSUSE Tumbleweed** - [opensuse-tumbleweed](opensuse-tumbleweed/)
 - **Alpine Linux 3.x** - [alpine-3](alpine-3/)
