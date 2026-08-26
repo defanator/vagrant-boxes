@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -eux
 umask 022
 
 # aux pre
