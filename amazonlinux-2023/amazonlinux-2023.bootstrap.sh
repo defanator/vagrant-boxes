@@ -3,6 +3,11 @@
 set -ex
 umask 022
 
+# aux pre
+if [ -n "${PRE_AUXILIARY_COMMANDS-}" ]; then
+    /bin/bash -c "${PRE_AUXILIARY_COMMANDS}"
+fi
+
 # ensure that initial cloud-init has completed
 cloud-init status --long
 
@@ -49,6 +54,11 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 
 # remove existing host keys (these should be regenerated on a first boot)
 rm -f /etc/ssh/ssh_host_*
+
+# aux post
+if [ -n "${POST_AUXILIARY_COMMANDS-}" ]; then
+    /bin/bash -c "${POST_AUXILIARY_COMMANDS}"
+fi
 
 # synchronize cached writes to persistent storage
 sync

@@ -19,6 +19,16 @@ source "vmware-vmx" "buildvm" {
   shutdown_command = "sudo /sbin/poweroff"
 }
 
+variable "pre_auxiliary_commands" {
+  type    = string
+  default = env("PRE_AUXILIARY_COMMANDS")
+}
+
+variable "post_auxiliary_commands" {
+  type    = string
+  default = env("POST_AUXILIARY_COMMANDS")
+}
+
 build {
   sources = ["source.vmware-vmx.buildvm"]
 
@@ -33,6 +43,10 @@ build {
   }
 
   provisioner "shell" {
-    inline = ["chmod +x /tmp/bootstrap.sh && sudo /tmp/bootstrap.sh"]
+    environment_vars = [
+      "PRE_AUXILIARY_COMMANDS=${var.pre_auxiliary_commands}",
+      "POST_AUXILIARY_COMMANDS=${var.post_auxiliary_commands}"
+    ]
+    inline = ["chmod +x /tmp/bootstrap.sh && sudo -E /tmp/bootstrap.sh"]
   }
 }
